@@ -94,14 +94,14 @@ class Planet:
     Class describing a planet.
 
     Attributes:
-    -position                       tuple of 3 floats
-    -rotation (degrees)             float
-    -spatial_resolution (degrees)   integer
-    -lat                            list of n integers
-    -lon                            list of n integers
-    -radius                         float
-    -color_light                    tuple of 3 floats
-    -color_shadow                   tuple of 3 floats
+        -position                       tuple of 3 floats
+        -rotation (degrees)             float
+        -spatial_resolution (degrees)   integer
+        -lat                            list of n integers
+        -lon                            list of n integers
+        -radius                         float
+        -color_light                    tuple of 3 floats
+        -color_shadow                   tuple of 3 floats
     """
 
     def __init__(self, spatial_resolution, radius, distance_factor, spice_name, central_body):
@@ -138,8 +138,6 @@ class Planet:
         self.color_shadow = (0.2, 0.2, 0.2)
         self.color_light = (0.6, 0.6, 0.6)
 
-        self.landmark = []
-
     def display(self, time):
         """
         Display planet.
@@ -164,11 +162,12 @@ class Planet:
                     self.spice_name, time, "ECLIPJ2000", "NONE", "SUN"
                 )[0] * self.distance_factor
 
-            if type(self.central_body) == Planet:
+            if isinstance(self.central_body, Planet):
 
                 self.position = spice.spkpos(
                     self.spice_name, time, "ECLIPJ2000", "NONE", self.central_body.spice_name
                 )[0] * self.distance_factor
+
                 self.position += spice.spkpos(
                     self.central_body.spice_name, time, "ECLIPJ2000", "NONE", "SUN"
                 )[0] * self.central_body.distance_factor
@@ -223,8 +222,6 @@ class Planet:
         # drawing faces
         glBegin(GL_QUADS)
         for i in range(len(planet_faces)):
-
-
             if scmod.compute_if_lit(
                 planet_vertices[planet_faces[i][0]] - self.position,
                 self.position
@@ -244,27 +241,6 @@ class Planet:
                 glVertex3fv(planet_vertices[vertex])
         glEnd()
 
-        # # drawing landmark
-        # if self.landmark:
-        #
-        #     landmark_coords = []
-        #
-        #     for i in range(2):
-        #         landmark_coord = scmod.geographic_to_cartesian_coord(
-        #                 self.landmark[0],
-        #                 self.landmark[1],
-        #                 self.radius * (1 + 0.5 * i)
-        #         )
-        #         landmark_coord = np.asarray(landmark_coord).dot(self.transformation_matrix)
-        #         landmark_coord += self.position
-        #         landmark_coords.append(landmark_coord)
-        #
-        #     glBegin(GL_LINES)
-        #     glColor4fv((1, 0, 0, 0))
-        #     glVertex3fv(landmark_coords[0])
-        #     glVertex3fv(landmark_coords[1])
-        #     glEnd()
-
 if __name__ == "__main__":
 
     # loading spice kernels
@@ -282,7 +258,6 @@ if __name__ == "__main__":
     earth = Planet(10, 0.4, 2 / 1.5e8, "EARTH", "SUN")
     earth.color_shadow = (0.0, 0.0, 0.3)
     earth.color_light = (0.3, 0.6, 1.0)
-    earth.landmark = (45.0, 0.0)
 
     moon = Planet(30, 0.2, 1 / 4e5, "MOON", earth)
 
