@@ -183,6 +183,8 @@ class Planet:
 
             self.transformation_matrix = spice.pxform("ECLIPJ2000", "IAU_" + self.spice_name, time)
 
+            print(self.transformation_matrix)
+
         get_orientation(time)
         get_position(time)
 
