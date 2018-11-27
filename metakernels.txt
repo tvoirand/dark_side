@@ -1,6 +1,0 @@
-\begindata
-KERNELS_TO_LOAD=(
-'./../spice_kernels/de430.bsp',
-'./../spice_kernels/naif0012.tls.pc'
-'./../spice_kernels/pck00010.tpc')
-\begintext
