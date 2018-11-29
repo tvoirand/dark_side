@@ -95,6 +95,77 @@ function main(){
 };
 
 `
+Range function.
+Input:
+    -first  float
+    -last   float
+    -step   float
+Output:     [float, ...]
+`
+function range(first, last, step) {
+    var size = (last - first) / step + 1;
+    return [...Array(size).keys()].map(i => i * step + first);
+};
+
+`
+Compute sphere vertices coordinates and indices.
+Input:
+    -radius     float
+Output: array containing:
+    -sphere_vertices  [float, ...]
+    -sphere_indices   [int, ...]
+`
+function compute_sphere_data(radius){
+
+    const lat = range(-90, 90, 10);
+    const lon = range(0, 360, 10);
+
+    var sphere_vertices = [];
+
+    var vertex = [0, 0, 0];
+    for (var i = 0; i < lat.length; i++){
+        for (var j = 0; j < lon.length; j++){
+            vertex = geographic_to_cartesian_coords(lat[i], lon[j], radius)
+            sphere_vertices.push(vertex[0])
+            sphere_vertices.push(vertex[1])
+            sphere_vertices.push(vertex[2])
+        }
+    }
+
+    var sphere_indices = [];
+
+    for (var i = 0; i < lat.length - 1; i++){
+        for (var j = 0; j < lon.length - 1; j++){
+            sphere_indices.push(j + i * lon.length)
+            sphere_indices.push(j + 1 + i * lon.length)
+            sphere_indices.push(j + 1 + i + 1 * lon.length)
+            sphere_indices.push(j + i + 1 * lon.length)
+        }
+    }
+
+    return [sphere_vertices, sphere_indices]
+
+};
+
+`
+Conversion from geographic coordinates to cartesian coordinates.
+Input:
+    -lat    float
+    -lon    float
+    -r      float
+Output:     [float, float, float]
+`
+function geographic_to_cartesian_coords(lat, lon, r){
+    lat = lat * Math.PI / 180;
+    lon = lon * Math.PI / 180;
+    return [
+        r * Math.cos(lon) * Math.cos(lat),
+        r * Math.sin(lon) * Math.cos(lat),
+        r * Math.sin(lat),
+    ]
+};
+
+`
 To compute planets positions and orientations until spice is implemented.
 `
 function SpiceSimulation(){
@@ -307,7 +378,7 @@ function Planet(
 };
 
 `
-Compute cube vertex coordinates and indices.
+Compute cube vert coordinates and indices.
 Output: array containing:
     -cube_vertices  [float, ...]
     -cube_indices   [int, ...]
