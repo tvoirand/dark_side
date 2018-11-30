@@ -31,10 +31,6 @@ function main(){
 
     projection_matrix = init_webgl_context(gl);
 
-    var cube_data = compute_cube_data();
-    var cube_vertices = cube_data[0];
-    var cube_indices = cube_data[1];
-
     var earth = new Planet(
         1.0,
         "EARTH",
@@ -42,8 +38,6 @@ function main(){
         gl,
         vs_source,
         fs_source,
-        cube_vertices,
-        cube_indices,
     );
 
     var moon = new Planet(
@@ -53,15 +47,12 @@ function main(){
         gl,
         vs_source,
         fs_source,
-        cube_vertices,
-        cube_indices,
     );
 
     planets_to_draw = [
         earth,
         moon
     ];
-
 
     var elapsed_time = 0;
 
@@ -138,8 +129,10 @@ function compute_sphere_data(radius){
         for (var j = 0; j < lon.length - 1; j++){
             sphere_indices.push(j + i * lon.length)
             sphere_indices.push(j + 1 + i * lon.length)
-            sphere_indices.push(j + 1 + i + 1 * lon.length)
-            sphere_indices.push(j + i + 1 * lon.length)
+            sphere_indices.push(j + 1 + (i + 1) * lon.length)
+            sphere_indices.push(j + 1 + (i + 1) * lon.length)
+            sphere_indices.push(j + (i + 1) * lon.length)
+            sphere_indices.push(j + i * lon.length)
         }
     }
 
@@ -240,8 +233,6 @@ function Planet(
     gl,
     vs_source,
     fs_source,
-    vertices,
-    indices,
 ){
 
     this.radius = radius;
@@ -271,7 +262,9 @@ function Planet(
 
     this.buffers = init_buffers(gl);
 
-    this.vertices = vertices
+    const shape_data = compute_sphere_data(this.radius);
+    this.vertices = shape_data[0];
+    this.indices = shape_data[1];
 
     for (var i = 0; i < this.vertices.length; i++){
         this.vertices[i] *= this.radius;
@@ -287,7 +280,7 @@ function Planet(
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
     gl.bufferData(
         gl.ELEMENT_ARRAY_BUFFER,
-        new Uint16Array(indices),
+        new Uint16Array(this.indices),
         gl.STATIC_DRAW,
     );
 
@@ -368,7 +361,7 @@ function Planet(
 
         {
             const offset = 0
-            const vertex_count = 36
+            const vertex_count = this.indices.length
             const type = gl.UNSIGNED_SHORT
             // gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertex_count)
             gl.drawElements(gl.TRIANGLES, vertex_count, type, offset)

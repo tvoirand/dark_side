@@ -2,15 +2,11 @@ Dark side.
 
 Display Sun, Earth (with longitudes and latitudes), and Moon.
 
-Version 0.7 of the 20181129.
+Version 0.8 of the 20181130.
 
 Added in this version:
-    -added geographic_to_cartesian_coords function
-    -added compute_sphere_data function
-    -added range function
+    -Planet vertices and indices creation moved inside class constructor
+    -Planet shape now a sphere
 
 Todo:
-    -move cube data creation in Planet class constructor
-    -represent spheres:
-        -change the Planet class to use sphere data (nb of vertices in display
-        function?)
+    -get rid of gl-matrix.js dependency
