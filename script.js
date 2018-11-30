@@ -15,17 +15,23 @@ function main(){
     // vertex and fragment shaders
     const vs_source = `
     attribute vec4 a_vertex_position;
+    attribute vec4 a_vertex_color;
 
     uniform mat4 u_model_view_matrix;
     uniform mat4 u_projection_matrix;
 
+    varying lowp vec4 v_color;
+
     void main(void) {
         gl_Position = u_projection_matrix * u_model_view_matrix * a_vertex_position;
+        v_color = a_vertex_color;
     }
     `;
     const fs_source = `
+    varying lowp vec4 v_color;
+
     void main(void){
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        gl_FragColor = v_color;
     }
     `;
 
@@ -34,6 +40,7 @@ function main(){
     var earth = new Planet(
         1.0,
         "EARTH",
+        [0.1, 0.1, 0.8, 1.0],
         "SUN",
         gl,
         vs_source,
@@ -43,6 +50,7 @@ function main(){
     var moon = new Planet(
         0.5,
         "MOON",
+        [0.5, 0.5, 0.5, 1.0],
         "EARTH",
         gl,
         vs_source,
@@ -142,6 +150,7 @@ function compute_sphere_data(radius){
 
 `
 Conversion from geographic coordinates to cartesian coordinates.
+South-North axis set as Y-axis for webgl compatibility
 Input:
     -lat    float
     -lon    float
@@ -153,8 +162,8 @@ function geographic_to_cartesian_coords(lat, lon, r){
     lon = lon * Math.PI / 180;
     return [
         r * Math.cos(lon) * Math.cos(lat),
-        r * Math.sin(lon) * Math.cos(lat),
         r * Math.sin(lat),
+        r * Math.sin(lon) * Math.cos(lat),
     ]
 };
 
@@ -217,10 +226,12 @@ Class describing a Planet.
 Attributes:
     -radius
     -name
+    -color
     -central_body
     -program_info
     -buffers
     -vertices
+    -indices
     -model_view_matrix
 Methods:
     -update_position
@@ -229,6 +240,7 @@ Methods:
 function Planet(
     radius,
     name,
+    color,
     central_body,
     gl,
     vs_source,
@@ -238,6 +250,7 @@ function Planet(
     this.radius = radius;
     this.name = name;
     this.central_body = central_body;
+    this.color = color;
 
     const shader_program = init_shader_program(gl, vs_source, fs_source);
     this.program_info = {
@@ -247,6 +260,10 @@ function Planet(
                 shader_program,
                 "a_vertex_position"
             ),
+            vertex_color: gl.getAttribLocation(
+                shader_program,
+                "a_vertex_color",
+            )
         },
         uniform_locations: {
             projection_matrix: gl.getUniformLocation(
@@ -281,6 +298,18 @@ function Planet(
     gl.bufferData(
         gl.ELEMENT_ARRAY_BUFFER,
         new Uint16Array(this.indices),
+        gl.STATIC_DRAW,
+    );
+
+    this.vertices_colors = [];
+    for (var i = 0; i < this.vertices.length; i++){
+        this.vertices_colors = this.vertices_colors.concat(this.color)
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color);
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(this.vertices_colors),
         gl.STATIC_DRAW,
     );
 
@@ -325,6 +354,7 @@ function Planet(
     this.display = function(){
         gl.useProgram(this.program_info.program)
 
+        // fetch vertices positions from buffer
         {
             const nb_components = 3; // nb values per vertex in buffer
             const type = gl.FLOAT;
@@ -345,6 +375,27 @@ function Planet(
             )
         }
 
+        // fetch vertices colors from buffer
+        {
+            const nb_components = 4; // nb values per vertex in buffer
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0
+            const offset = 0
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color)
+            gl.vertexAttribPointer(
+                this.program_info.attrib_locations.vertex_color,
+                nb_components,
+                type,
+                normalize,
+                stride,
+                offset
+            )
+            gl.enableVertexAttribArray(
+                this.program_info.attrib_locations.vertex_color
+            )
+        }
+
         gl.uniformMatrix4fv(
                 this.program_info.uniform_locations.model_view_matrix,
                 false,
@@ -359,11 +410,11 @@ function Planet(
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices)
 
+        // draw
         {
             const offset = 0
             const vertex_count = this.indices.length
             const type = gl.UNSIGNED_SHORT
-            // gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertex_count)
             gl.drawElements(gl.TRIANGLES, vertex_count, type, offset)
         }
     }
@@ -440,7 +491,7 @@ Output:
 function init_webgl_context(gl){
 
     // initiate some WebGL context
-    gl.clearColor(0.1, 0.1, 0.4, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -542,8 +593,10 @@ Output:
 function init_buffers(gl){
     const position_buffer = gl.createBuffer()
     const index_buffer = gl.createBuffer()
+    const color_buffer = gl.createBuffer()
     return {
         position: position_buffer,
-        indices: index_buffer
+        indices: index_buffer,
+        color: color_buffer
     }
 };
