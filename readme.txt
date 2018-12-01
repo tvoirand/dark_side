@@ -2,12 +2,10 @@ Dark side.
 
 Display Sun, Earth (with longitudes and latitudes), and Moon.
 
-Version 0.9 of the 20181130.
+Version 0.10 of the 20181201.
 
 Added in this version:
-    -Planet color implemented
-    -geographic_to_cartesian_coords function output adapted to webgl
-    orientation (north-south = y-axis)
+    -lighting added
 
 Todo:
     -get rid of gl-matrix.js dependency

@@ -16,22 +16,35 @@ function main(){
     const vs_source = `
     attribute vec4 a_vertex_position;
     attribute vec4 a_vertex_color;
+    attribute vec3 a_vertex_normal;
 
     uniform mat4 u_model_view_matrix;
     uniform mat4 u_projection_matrix;
+    uniform mat4 u_normal_matrix;
 
     varying lowp vec4 v_color;
+    varying highp vec3 v_lighting;
 
     void main(void) {
         gl_Position = u_projection_matrix * u_model_view_matrix * a_vertex_position;
         v_color = a_vertex_color;
+
+        highp vec3 ambient_light = vec3(0.3, 0.3, 0.3);
+        highp vec3 directional_light_color = vec3(0.3, 0.3, 0.3);
+        highp vec3 sun_vector = vec3(0, 0, 20) - (u_projection_matrix * u_model_view_matrix * a_vertex_position).xyz;
+
+        highp vec4 transformed_normal = u_normal_matrix * vec4(a_vertex_normal, 1.0);
+
+        highp float directional = max(dot(transformed_normal.xyz, sun_vector), 0.0);
+        v_lighting = ambient_light + (directional_light_color * directional);
     }
     `;
     const fs_source = `
     varying lowp vec4 v_color;
+    varying highp vec3 v_lighting;
 
     void main(void){
-        gl_FragColor = v_color;
+        gl_FragColor = vec4(v_color.rgb * v_lighting, v_color.a);
     }
     `;
 
@@ -40,7 +53,7 @@ function main(){
     var earth = new Planet(
         1.0,
         "EARTH",
-        [0.1, 0.1, 0.8, 1.0],
+        [0.2, 0.2, 1.0, 1.0],
         "SUN",
         gl,
         vs_source,
@@ -50,7 +63,7 @@ function main(){
     var moon = new Planet(
         0.5,
         "MOON",
-        [0.5, 0.5, 0.5, 1.0],
+        [0.9, 0.9, 0.9, 1.0],
         "EARTH",
         gl,
         vs_source,
@@ -195,8 +208,8 @@ function SpiceSimulation(){
         };
         if (name == "MOON"){
             return [
-                5.0 * Math.cos(time) + 2.0 * Math.cos(time / 2),
-                5.0 * Math.sin(time) + 2.0 * Math.sin(time / 2),
+                5.0 * Math.cos(time) + 2.0 * Math.cos(time * 6),
+                5.0 * Math.sin(time) + 2.0 * Math.sin(time * 6),
                 -20,
             ];
         };
@@ -263,6 +276,10 @@ function Planet(
             vertex_color: gl.getAttribLocation(
                 shader_program,
                 "a_vertex_color",
+            ),
+            vertex_normal: gl.getAttribLocation(
+                shader_program,
+                "a_vertex_normal",
             )
         },
         uniform_locations: {
@@ -273,12 +290,17 @@ function Planet(
             model_view_matrix: gl.getUniformLocation(
                 shader_program,
                 "u_model_view_matrix"
+            ),
+            normal_matrix : gl.getUniformLocation(
+                shader_program,
+                "u_normal_matrix",
             )
         }
     };
 
     this.buffers = init_buffers(gl);
 
+    // creating vertices position buffer and vertices indices buffer
     const shape_data = compute_sphere_data(this.radius);
     this.vertices = shape_data[0];
     this.indices = shape_data[1];
@@ -301,6 +323,7 @@ function Planet(
         gl.STATIC_DRAW,
     );
 
+    // creating vertices colors buffer
     this.vertices_colors = [];
     for (var i = 0; i < this.vertices.length; i++){
         this.vertices_colors = this.vertices_colors.concat(this.color)
@@ -313,12 +336,25 @@ function Planet(
         gl.STATIC_DRAW,
     );
 
+    // creating vertices normals buffer
+    // sphere normal vectors have same coordinates as vertices
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.normal);
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(this.vertices),
+        gl.STATIC_DRAW,
+    );
+
     this.model_view_matrix = mat4.create();
     mat4.translate(
         this.model_view_matrix,
         this.model_view_matrix,
         [0, 0, -20]
     );
+
+    this.normal_matrix = mat4.create();
+    mat4.invert(this.normal_matrix, this.model_view_matrix);
+    mat4.transpose(this.normal_matrix, this.normal_matrix);
 
     `
     Set planet position by updating its model view matrix.
@@ -396,16 +432,41 @@ function Planet(
             )
         }
 
+        // fetch vertices normals from buffer
+        {
+            const nb_components = 3; // nb values per vertex in buffer
+            const type = gl.FLOAT;
+            const normalize = false;
+            const stride = 0
+            const offset = 0
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.normal)
+            gl.vertexAttribPointer(
+                this.program_info.attrib_locations.vertex_normal,
+                nb_components,
+                type,
+                normalize,
+                stride,
+                offset
+            )
+            gl.enableVertexAttribArray(
+                this.program_info.attrib_locations.vertex_normal
+            )
+        }
+
         gl.uniformMatrix4fv(
                 this.program_info.uniform_locations.model_view_matrix,
                 false,
                 this.model_view_matrix
         )
-
         gl.uniformMatrix4fv(
                 this.program_info.uniform_locations.projection_matrix,
                 false,
                 projection_matrix
+        )
+        gl.uniformMatrix4fv(
+            this.program_info.uniform_locations.normal_matrix,
+            false,
+            this.normal_matrix
         )
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices)
@@ -594,9 +655,11 @@ function init_buffers(gl){
     const position_buffer = gl.createBuffer()
     const index_buffer = gl.createBuffer()
     const color_buffer = gl.createBuffer()
+    const normal_buffer = gl.createBuffer()
     return {
         position: position_buffer,
         indices: index_buffer,
-        color: color_buffer
+        color: color_buffer,
+        normal: normal_buffer,
     }
 };
