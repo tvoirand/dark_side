@@ -21,6 +21,7 @@ function main(){
     uniform mat4 u_model_view_matrix;
     uniform mat4 u_projection_matrix;
     uniform mat4 u_normal_matrix;
+    uniform vec3 u_light_position;
 
     varying lowp vec4 v_color;
     varying highp vec3 v_lighting;
@@ -30,13 +31,13 @@ function main(){
         v_color = a_vertex_color;
 
         highp vec3 ambient_light = vec3(0.3, 0.3, 0.3);
-        highp vec3 directional_light_color = vec3(0.3, 0.3, 0.3);
-        highp vec3 sun_vector = vec3(0, 0, 20) - (u_projection_matrix * u_model_view_matrix * a_vertex_position).xyz;
+        highp vec3 sunlight_color = vec3(1, 1, 1);
+        highp vec3 sun_vector = normalize(u_light_position - (u_projection_matrix * u_model_view_matrix * a_vertex_position).xyz);
 
         highp vec4 transformed_normal = u_normal_matrix * vec4(a_vertex_normal, 1.0);
 
-        highp float directional = max(dot(transformed_normal.xyz, sun_vector), 0.0);
-        v_lighting = ambient_light + (directional_light_color * directional);
+        highp float direction_to_sun = max(dot(transformed_normal.xyz, sun_vector), 0.0);
+        v_lighting = ambient_light + (sunlight_color * direction_to_sun);
     }
     `;
     const fs_source = `
@@ -50,8 +51,10 @@ function main(){
 
     projection_matrix = init_webgl_context(gl);
 
+    sun_position = [0, 0, 20]
+
     var earth = new Planet(
-        1.0,
+        1.25,
         "EARTH",
         [0.2, 0.2, 1.0, 1.0],
         "SUN",
@@ -61,7 +64,7 @@ function main(){
     );
 
     var moon = new Planet(
-        0.5,
+        0.75,
         "MOON",
         [0.9, 0.9, 0.9, 1.0],
         "EARTH",
@@ -70,9 +73,20 @@ function main(){
         fs_source,
     );
 
+    var sun = new Planet(
+        0.75,
+        "SUN",
+        [1.0, 1.0, 0.0, 0.9],
+        "SUN",
+        gl,
+        vs_source,
+        fs_source,
+    )
+
     planets_to_draw = [
         earth,
-        moon
+        moon,
+        sun,
     ];
 
     var elapsed_time = 0;
@@ -201,16 +215,23 @@ function SpiceSimulation(){
     this.spkpos = function(name, time, frame, correction, central_body){
         if (name == "EARTH"){
             return [
-                5.0 * Math.cos(time),
-                5.0 * Math.sin(time),
+                7.0 * Math.cos(time),
+                7.0 * Math.sin(time),
                 -20
             ];
         };
         if (name == "MOON"){
             return [
-                5.0 * Math.cos(time) + 2.0 * Math.cos(time * 6),
-                5.0 * Math.sin(time) + 2.0 * Math.sin(time * 6),
+                7.0 * Math.cos(time) + 3.0 * Math.cos(time * 3),
+                7.0 * Math.sin(time) + 3.0 * Math.sin(time * 3),
                 -20,
+            ];
+        };
+        if (name == "SUN"){
+            return [
+                0.0,
+                0.0,
+                -20
             ];
         };
     };
@@ -291,9 +312,13 @@ function Planet(
                 shader_program,
                 "u_model_view_matrix"
             ),
-            normal_matrix : gl.getUniformLocation(
+            normal_matrix: gl.getUniformLocation(
                 shader_program,
                 "u_normal_matrix",
+            ),
+            light_position: gl.getUniformLocation(
+                shader_program,
+                "u_light_position",
             )
         }
     };
@@ -454,20 +479,25 @@ function Planet(
         }
 
         gl.uniformMatrix4fv(
-                this.program_info.uniform_locations.model_view_matrix,
-                false,
-                this.model_view_matrix
+            this.program_info.uniform_locations.model_view_matrix,
+            false,
+            this.model_view_matrix
         )
         gl.uniformMatrix4fv(
-                this.program_info.uniform_locations.projection_matrix,
-                false,
-                projection_matrix
+            this.program_info.uniform_locations.projection_matrix,
+            false,
+            projection_matrix
         )
         gl.uniformMatrix4fv(
             this.program_info.uniform_locations.normal_matrix,
             false,
             this.normal_matrix
         )
+        gl.uniform3fv(
+            this.program_info.uniform_locations.light_position,
+            sun_position
+        )
+
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices)
 
