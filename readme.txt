@@ -2,12 +2,10 @@ Dark side.
 
 Display Sun, Earth (with longitudes and latitudes), and Moon.
 
-Version 0.11 of the 20181201.
+Version 0.12 of the 20181206.
 
 Added in this version:
-    -point lighting position moved out of shader string (sun_position variable
-    in main)
-    -sun as new Planet instance
+    -docstring reformatting
 
 Todo:
     -get rid of gl-matrix.js dependency

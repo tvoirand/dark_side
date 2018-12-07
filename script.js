@@ -32,11 +32,12 @@ function main(){
 
         highp vec3 ambient_light = vec3(0.3, 0.3, 0.3);
         highp vec3 sunlight_color = vec3(1, 1, 1);
-        highp vec3 sun_vector = normalize(u_light_position - (u_projection_matrix * u_model_view_matrix * a_vertex_position).xyz);
+        highp vec3 sun_vector = u_light_position - (u_projection_matrix * u_model_view_matrix * a_vertex_position).xyz;
 
         highp vec4 transformed_normal = u_normal_matrix * vec4(a_vertex_normal, 1.0);
 
-        highp float direction_to_sun = max(dot(transformed_normal.xyz, sun_vector), 0.0);
+        highp float direction_to_sun = max(dot(transformed_normal.xyz, normalize(sun_vector)), 0.0);
+
         v_lighting = ambient_light + (sunlight_color * direction_to_sun);
     }
     `;
@@ -74,9 +75,9 @@ function main(){
     );
 
     var sun = new Planet(
-        0.75,
+        1.0,
         "SUN",
-        [1.0, 1.0, 0.0, 0.9],
+        [1.0, 1.0, 0.0, 1.0],
         "SUN",
         gl,
         vs_source,
@@ -120,28 +121,29 @@ function main(){
     requestAnimationFrame(render);
 };
 
-`
-Range function.
-Input:
-    -first  float
-    -last   float
-    -step   float
-Output:     [float, ...]
-`
 function range(first, last, step) {
+    `
+    Range function.
+    Input:
+        -first  float
+        -last   float
+        -step   float
+    Output:     [float, ...]
+    `
+
     var size = (last - first) / step + 1;
     return [...Array(size).keys()].map(i => i * step + first);
 };
 
-`
-Compute sphere vertices coordinates and indices.
-Input:
-    -radius     float
-Output: array containing:
-    -sphere_vertices  [float, ...]
-    -sphere_indices   [int, ...]
-`
 function compute_sphere_data(radius){
+    `
+    Compute sphere vertices coordinates and indices.
+    Input:
+        -radius     float
+    Output: array containing:
+        -sphere_vertices  [float, ...]
+        -sphere_indices   [int, ...]
+    `
 
     const lat = range(-90, 90, 10);
     const lon = range(0, 360, 10);
@@ -175,16 +177,17 @@ function compute_sphere_data(radius){
 
 };
 
-`
-Conversion from geographic coordinates to cartesian coordinates.
-South-North axis set as Y-axis for webgl compatibility
-Input:
-    -lat    float
-    -lon    float
-    -r      float
-Output:     [float, float, float]
-`
 function geographic_to_cartesian_coords(lat, lon, r){
+    `
+    Conversion from geographic coordinates to cartesian coordinates.
+    South-North axis set as Y-axis for webgl compatibility
+    Input:
+        -lat    float
+        -lon    float
+        -r      float
+    Output:     [float, float, float]
+    `
+
     lat = lat * Math.PI / 180;
     lon = lon * Math.PI / 180;
     return [
@@ -194,25 +197,26 @@ function geographic_to_cartesian_coords(lat, lon, r){
     ]
 };
 
-`
-To compute planets positions and orientations until spice is implemented.
-`
 function SpiceSimulation(){
+    `
+    To compute planets positions and orientations until spice is implemented.
+    `
 
-    `
-    Give planet position.
-    Input:
-        -name           string
-            spice compatible planet name
-        -time           float
-            et time
-        -frame          string
-            spice compatible reference frame name
-        -correction     string
-        -central_body   string
-            spice compatible planet name
-    `
     this.spkpos = function(name, time, frame, correction, central_body){
+        `
+        Give planet position.
+        Input:
+            -name           string
+                spice compatible planet name
+            -time           float
+                et time
+            -frame          string
+                spice compatible reference frame name
+            -correction     string
+            -central_body   string
+                spice compatible planet name
+        `
+
         if (name == "EARTH"){
             return [
                 7.0 * Math.cos(time),
@@ -236,17 +240,18 @@ function SpiceSimulation(){
         };
     };
 
-    `
-    Give planet orientation.
-    Input:
-        -frame          string
-            spice compatible reference frame name
-        -name           string
-            spice compatible IAU planet name
-        -time           float
-            et time
-    `
     this.pxform = function(frame, name, time){
+        `
+        Give planet orientation.
+        Input:
+            -frame          string
+                spice compatible reference frame name
+            -name           string
+                spice compatible IAU planet name
+            -time           float
+                et time
+        `
+
         return [
             [1.0, 0.0, 0.0],
             [0.0, 1.0, 0.0],
@@ -255,22 +260,6 @@ function SpiceSimulation(){
     };
 };
 
-`
-Class describing a Planet.
-Attributes:
-    -radius
-    -name
-    -color
-    -central_body
-    -program_info
-    -buffers
-    -vertices
-    -indices
-    -model_view_matrix
-Methods:
-    -update_position
-    -display
-`
 function Planet(
     radius,
     name,
@@ -280,6 +269,22 @@ function Planet(
     vs_source,
     fs_source,
 ){
+    `
+    Class describing a Planet.
+    Attributes:
+        -radius
+        -name
+        -color
+        -central_body
+        -program_info
+        -buffers
+        -vertices
+        -indices
+        -model_view_matrix
+    Methods:
+        -update_position
+        -display
+    `
 
     this.radius = radius;
     this.name = name;
@@ -381,12 +386,13 @@ function Planet(
     mat4.invert(this.normal_matrix, this.model_view_matrix);
     mat4.transpose(this.normal_matrix, this.normal_matrix);
 
-    `
-    Set planet position by updating its model view matrix.
-    Input:
-        -position_vector    [float, float, float]
-    `
     this.update_position = function(position_vector){
+        `
+        Set planet position by updating its model view matrix.
+        Input:
+            -position_vector    [float, float, float]
+        `
+
         mat4.set(
             this.model_view_matrix,
             this.model_view_matrix[0],
@@ -409,10 +415,11 @@ function Planet(
         );
     };
 
-    `
-    Display planet.
-    `
     this.display = function(){
+        `
+        Display planet.
+        `
+
         gl.useProgram(this.program_info.program)
 
         // fetch vertices positions from buffer
@@ -512,13 +519,13 @@ function Planet(
 
 };
 
-`
-Compute cube vert coordinates and indices.
-Output: array containing:
-    -cube_vertices  [float, ...]
-    -cube_indices   [int, ...]
-`
 function compute_cube_data(){
+    `
+    Compute cube vert coordinates and indices.
+    Output: array containing:
+        -cube_vertices  [float, ...]
+        -cube_indices   [int, ...]
+    `
 
     var cube_vertices = [
         // Front face
@@ -572,14 +579,14 @@ function compute_cube_data(){
 
 };
 
-`
-Initiate WebGL context and create perspective matrix.
-Input:
-    -gl                 WebGLRenderingContext instance
-Output:
-    -projection_matrix  mat4 matrix
-`
 function init_webgl_context(gl){
+    `
+    Initiate WebGL context and create perspective matrix.
+    Input:
+        -gl                 WebGLRenderingContext instance
+    Output:
+        -projection_matrix  mat4 matrix
+    `
 
     // initiate some WebGL context
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -599,17 +606,18 @@ function init_webgl_context(gl){
 
 };
 
-`
-Create a shader program based on vertex and fragment shader GLSL strings.
-Input:
-    -vs_source       string
-        contains GLSL source code to set
-    -fs_source       string
-        contains GLSL source code to set
-Output:
-    -shader_program  WebGLProgram instance
-`
 function init_shader_program(gl, vs_source, fs_source) {
+    `
+    Create a shader program based on vertex and fragment shader GLSL strings.
+    Input:
+        -vs_source       string
+            contains GLSL source code to set
+        -fs_source       string
+            contains GLSL source code to set
+    Output:
+        -shader_program  WebGLProgram instance
+    `
+
     const vertex_shader = load_shader(gl, gl.VERTEX_SHADER, vs_source)
     const fragment_shader = load_shader(gl, gl.FRAGMENT_SHADER, fs_source)
 
@@ -641,17 +649,18 @@ function init_shader_program(gl, vs_source, fs_source) {
     return shader_program
 };
 
-`
-Create shader of given type based on a string GLSL shader source.
-Input:
-    -gl         WebGLRenderingContext instance
-    -type       gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
-    -source     string
-        contains GLSL source code to set
-Output:
-    -shader     WebGLShader instance
-`
 function load_shader(gl, type, source) {
+    `
+    Create shader of given type based on a string GLSL shader source.
+    Input:
+        -gl         WebGLRenderingContext instance
+        -type       gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+        -source     string
+            contains GLSL source code to set
+    Output:
+        -shader     WebGLShader instance
+    `
+
     const shader = gl.createShader(type)
 
     // Send the source to the shader object
@@ -674,14 +683,15 @@ function load_shader(gl, type, source) {
     return shader
 };
 
-`
-Initialize buffers.
-Input:
-    -gl         WebGLRenderingContext instance
-Output:
-    -buffers    object containing WebGLBuffer instances
-`
 function init_buffers(gl){
+    `
+    Initialize buffers.
+    Input:
+        -gl         WebGLRenderingContext instance
+    Output:
+        -buffers    object containing WebGLBuffer instances
+    `
+
     const position_buffer = gl.createBuffer()
     const index_buffer = gl.createBuffer()
     const color_buffer = gl.createBuffer()
