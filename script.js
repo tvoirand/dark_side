@@ -4,7 +4,7 @@ spice = new SpiceSimulation;
 main();
 
 function main(){
-    // fetch canvas and context
+
     const canvas = document.querySelector("canvas");
     const gl = canvas.getContext("webgl");
     if (!gl){
@@ -13,6 +13,12 @@ function main(){
     };
 
     projection_matrix = init_webgl_context(gl);
+
+    const postprocessing_texture = init_postprocessing(gl);
+    const postprocessing_texture_width = gl.canvas.clientWidth;
+    const postprocessing_texture_height = gl.canvas.clientHeight;
+
+    const framebuffer = init_framebuffer(gl, postprocessing_texture);
 
     sun_position = [0, 0, 20]
 
@@ -23,7 +29,6 @@ function main(){
         "SUN",
         gl,
     );
-
     var moon = new Planet(
         0.75,
         "MOON",
@@ -31,15 +36,13 @@ function main(){
         "EARTH",
         gl,
     );
-
     var sun = new Sun(
-        1.5,
+        1.0,
         "SUN",
         [1.0, 1.0, 0.0, 1.0],
         "SUN",
         gl,
     )
-
     objects_to_draw = [
         earth,
         moon,
@@ -47,14 +50,11 @@ function main(){
     ];
 
     var elapsed_time = 0;
-
     var render = function(time){
+
         time *= 0.001;
         const delta_t = time - elapsed_time;
         elapsed_time = time;
-
-        // clear canvas
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         objects_to_draw.forEach(function(planet){
             planet.update_position(
@@ -68,14 +68,201 @@ function main(){
             );
         });
 
-        objects_to_draw.forEach(function(planet){
-            planet.display()
-        });
+        {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.bindTexture(gl.TEXTURE_2D, postprocessing_texture);
+            gl.viewport(
+                0,
+                0,
+                postprocessing_texture_width,
+                postprocessing_texture_height
+            );
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            objects_to_draw.forEach(function(planet){
+                planet.display()
+            });
+        }
+
+        postprocessing_vertex_shader = `
+            attribute vec4 a_vertex_position;
+            attribute vec2 a_texture_coord;
+
+            varying highp vec2 v_texture_coord;
+
+            void main(void){
+                gl_Position = vec4(a_vertex_position.x, a_vertex_position.y, 0.0, 1.0);
+                v_texture_coord = a_texture_coord;
+            }
+        `
+        postprocessing_fragment_shader = `
+            varying highp vec2 v_texture_coord;
+
+            uniform sampler2D u_screen_texture;
+
+
+
+            void main(void){
+                gl_FragColor = texture2D(u_screen_texture, v_texture_coord);
+            }
+        `
+        // texture2D(u_screen_texture, v_texture_coord)
+
+        {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.bindTexture(gl.TEXTURE_2D, postprocessing_texture);
+            gl.viewport(
+                0,
+                0,
+                postprocessing_texture_width,
+                postprocessing_texture_height
+            );
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            const shader_program = init_shader_program(
+                gl,
+                postprocessing_vertex_shader,
+                postprocessing_fragment_shader
+            );
+
+            program_info = {
+                program: shader_program,
+                attrib_locations: {
+                    vertex_position: gl.getAttribLocation(
+                        shader_program,
+                        "a_vertex_position"
+                    ),
+                    texture_coord: gl.getAttribLocation(
+                        shader_program,
+                        "a_texture_coord"
+                    )
+                },
+                uniform_locations: {
+                    screen_texture: gl.getUniformLocation(
+                        shader_program,
+                        "u_screen_texture"
+                    )
+                }
+            };
+
+            const position_buffer = gl.createBuffer();
+            const index_buffer = gl.createBuffer();
+            const texture_coord_buffer = gl.createBuffer();
+            buffers = {
+                position: position_buffer,
+                indices: index_buffer,
+                texture_coord: texture_coord_buffer
+            }
+
+            vertices = [
+                // -0.9, -0.9, 0.0,
+                // 0.9, -0.9, 0.0,
+                // 0.9, 0.9, 0.0,
+                // -0.9, 0.9, 0.0,
+                // -1.0, -1.0, -10.0,
+                // 1.0, -1.0, -10.0,
+                // 1.0, 1.0, -10.0,
+                // -1.0, 1.0, -10.0,
+                -1.0, -1.0, 0.0,
+                1.0, -1.0, 0.0,
+                1.0, 1.0, 0.0,
+                -1.0, 1.0, 0.0,
+            ]
+            indices = [
+                0, 1, 2, 0, 2, 3,
+            ]
+            texture_coords = [
+                0.0, 0.0,
+                1.0, 0.0,
+                1.0, 1.0,
+                0.0, 1.0,
+            ]
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(vertices),
+                gl.STATIC_DRAW,
+            );
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+            gl.bufferData(
+                gl.ELEMENT_ARRAY_BUFFER,
+                new Uint16Array(indices),
+                gl.STATIC_DRAW,
+            );
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texture_coord);
+            gl.bufferData(
+                gl.ARRAY_BUFFER,
+                new Float32Array(texture_coords),
+                gl.STATIC_DRAW,
+            )
+
+
+            gl.useProgram(program_info.program)
+
+            // fetch vertices positions from buffer
+            {
+                const nb_components = 3; // nb values per vertex in buffer
+                const type = gl.FLOAT;
+                const normalize = false;
+                const stride = 0
+                const offset = 0
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position)
+                gl.vertexAttribPointer(
+                    program_info.attrib_locations.vertex_position,
+                    nb_components,
+                    type,
+                    normalize,
+                    stride,
+                    offset
+                )
+                gl.enableVertexAttribArray(
+                    program_info.attrib_locations.vertex_position
+                )
+            }
+
+            // fetch texture coordinates from buffer
+            {
+                const num = 2;
+                const type = gl.FLOAT;
+                const normalize = false;
+                const stride = 0;
+                const offset = 0;
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texture_coord);
+                gl.vertexAttribPointer(
+                    program_info.attrib_locations.texture_coord,
+                    num,
+                    type,
+                    normalize,
+                    stride,
+                    offset,
+                );
+                gl.enableVertexAttribArray(
+                    program_info.attrib_locations.texture_coord
+                );
+            }
+            // gl.activeTexture(gl.TEXTURE_0);
+            // gl.bindTexture(gl.TEXTURE_2D, postprocessing_texture);
+            // gl.uniform1i(program_info.uniform_locations.u_screen_texture, 0);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
+
+            // draw
+            {
+                const offset = 0
+                const vertex_count = indices.length
+                const type = gl.UNSIGNED_SHORT
+                gl.drawElements(gl.TRIANGLES, vertex_count, type, offset)
+            }
+
+        }
 
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
 };
+
 
 function range(first, last, step) {
     `
@@ -215,6 +402,7 @@ function SpiceSimulation(){
         ];
     };
 };
+
 
 function Planet(
     radius,
@@ -743,71 +931,12 @@ function Sun(
 
 };
 
-function compute_cube_data(){
-    `
-    Compute cube vert coordinates and indices.
-    Output: array containing:
-        -cube_vertices  [float, ...]
-        -cube_indices   [int, ...]
-    `
-
-    var cube_vertices = [
-        // Front face
-        -1.0, -1.0,  1.0,
-         1.0, -1.0,  1.0,
-         1.0,  1.0,  1.0,
-        -1.0,  1.0,  1.0,
-
-        // Back face
-        -1.0, -1.0, -1.0,
-        -1.0,  1.0, -1.0,
-         1.0,  1.0, -1.0,
-         1.0, -1.0, -1.0,
-
-        // Top face
-        -1.0,  1.0, -1.0,
-        -1.0,  1.0,  1.0,
-         1.0,  1.0,  1.0,
-         1.0,  1.0, -1.0,
-
-        // Bottom face
-        -1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-         1.0, -1.0,  1.0,
-        -1.0, -1.0,  1.0,
-
-        // Right face
-         1.0, -1.0, -1.0,
-         1.0,  1.0, -1.0,
-         1.0,  1.0,  1.0,
-         1.0, -1.0,  1.0,
-
-        // Left face
-        -1.0, -1.0, -1.0,
-        -1.0, -1.0,  1.0,
-        -1.0,  1.0,  1.0,
-        -1.0,  1.0, -1.0,
-    ];
-
-    const cube_indices = [
-        // define each face of cube as a pair of triangle
-        0,  1,  2,      0,  2,  3,    // front
-        4,  5,  6,      4,  6,  7,    // back
-        8,  9,  10,     8,  10, 11,   // top
-        12, 13, 14,     12, 14, 15,   // bottom
-        16, 17, 18,     16, 18, 19,   // right
-        20, 21, 22,     20, 22, 23,   // left
-    ];
-
-    return [cube_vertices, cube_indices]
-
-};
 
 function init_webgl_context(gl){
     `
     Initiate WebGL context and create perspective matrix.
     Input:
-        -gl                 WebGLRenderingContext instance
+        -gl                 WebGLRenderingContext object
     Output:
         -projection_matrix  mat4 matrix
     `
@@ -839,7 +968,7 @@ function init_shader_program(gl, vs_source, fs_source) {
         -fs_source       string
             contains GLSL source code to set
     Output:
-        -shader_program  WebGLProgram instance
+        -shader_program  WebGLProgram object
     `
 
     const vertex_shader = load_shader(gl, gl.VERTEX_SHADER, vs_source)
@@ -877,12 +1006,12 @@ function load_shader(gl, type, source) {
     `
     Create shader of given type based on a string GLSL shader source.
     Input:
-        -gl         WebGLRenderingContext instance
+        -gl         WebGLRenderingContext object
         -type       gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
         -source     string
             contains GLSL source code to set
     Output:
-        -shader     WebGLShader instance
+        -shader     WebGLShader object
     `
 
     const shader = gl.createShader(type)
@@ -911,7 +1040,7 @@ function init_buffers(gl){
     `
     Initialize buffers.
     Input:
-        -gl         WebGLRenderingContext instance
+        -gl         WebGLRenderingContext object
     Output:
         -buffers    object containing WebGLBuffer instances
     `
@@ -927,3 +1056,74 @@ function init_buffers(gl){
         normal: normal_buffer,
     }
 };
+
+function init_postprocessing(gl){
+    `
+    Create, bind, and specify image of texture fitting the canvas.
+    Input:
+        -gl         WebGLRenderingContext object
+    Output:
+        -texture    WebGLTexture object
+    `
+
+    // creating texture to render to
+    const texture_width = gl.canvas.clientWidth;
+    const texture_height = gl.canvas.clientHeight;
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    {
+        // define size and format of level 0
+        const level = 0;
+        const internal_format = gl.RGBA;
+        const border = 0;
+        const format = gl.RGBA;
+        const type = gl.UNSIGNED_BYTE;
+        const data = null;
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            level,
+            internal_format,
+            texture_width,
+            texture_height,
+            border,
+            format,
+            type,
+            data
+        )
+        // set the filtering so we don't need mips
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+
+    return texture
+}
+
+function init_framebuffer(gl, target_texture){
+    `
+    Create, bind, and attache framebuffer to texture.
+    Input:
+        -gl                 WebGLRenderingContext object
+        -target_texture     WebGLTexture object
+    Output:
+        -framebuffer        WebGLFramebuffer object
+    `
+
+    // creating and binding framebuffer
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+    // attach texture
+    const attachment_point = gl.COLOR_ATTACHMENT0;
+    gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        attachment_point,
+        gl.TEXTURE_2D,
+        target_texture,
+        0
+    )
+
+    if(gl.isFramebuffer(framebuffer)){
+        return framebuffer
+    }
+}
