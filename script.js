@@ -813,6 +813,14 @@ function Sun(
 
 }
 
+
+function compute_kernel_weight(kernel){
+    var weight = kernel.reduce(function(prev, curr){
+        return prev + curr;
+    });
+    return weight <= 0 ? 1 : weight;
+}
+
 function PostprocessingShader(gl){
     `
     Class for postprocessing operations.
@@ -837,9 +845,55 @@ function PostprocessingShader(gl){
         varying highp vec2 v_texture_coord;
 
         uniform sampler2D u_screen_texture;
+        uniform mediump vec2 u_texture_size;
+
+        uniform mediump float u_kernel[9];
+        uniform mediump float u_kernel_weight;
 
         void main(void){
-            gl_FragColor = texture2D(u_screen_texture, v_texture_coord);
+
+            mediump vec2 one_pixel_size = vec2(1.0, 1.0) / u_texture_size;
+
+            mediump vec4 color_sum =
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(-1, -1)
+                ) * u_kernel[0] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(0, -1)
+                ) * u_kernel[1] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(1, -1)
+                ) * u_kernel[2] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(-1, 0)
+                ) * u_kernel[3] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(0, 0)
+                ) * u_kernel[4] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(1, 0)
+                ) * u_kernel[5] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(-1, 1)
+                ) * u_kernel[6] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(0, 1)
+                ) * u_kernel[7] +
+                texture2D(
+                    u_screen_texture,
+                    v_texture_coord + one_pixel_size * vec2(1, 1)
+                ) * u_kernel[8]
+                ;
+
+            gl_FragColor = vec4((color_sum / u_kernel_weight).rgb, 1.0);
         }
     `
 
@@ -865,6 +919,18 @@ function PostprocessingShader(gl){
             screen_texture: gl.getUniformLocation(
                 shader_program,
                 "u_screen_texture"
+            ),
+            texture_size: gl.getUniformLocation(
+                shader_program,
+                "u_texture_size"
+            ),
+            kernel: gl.getUniformLocation(
+                shader_program,
+                "u_kernel[0]"
+            ),
+            kernel_weight: gl.getUniformLocation(
+                shader_program,
+                "u_kernel_weight"
             )
         }
     };
@@ -892,6 +958,12 @@ function PostprocessingShader(gl){
         1.0, 0.0,
         1.0, 1.0,
         0.0, 1.0,
+    ]
+
+    this.blur_kernel = [
+        1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0,
+        2.0 / 16.0, 4.0 / 16.0, 2.0 / 16.0,
+        1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0
     ]
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position);
@@ -960,6 +1032,20 @@ function PostprocessingShader(gl){
                 this.program_info.attrib_locations.texture_coord
             );
         }
+
+        gl.uniform2f(
+            this.program_info.uniform_locations.texture_size,
+            gl.canvas.clientWidth,
+            gl.canvas.clientHeight,
+        );
+        gl.uniform1fv(
+            this.program_info.uniform_locations.kernel,
+            this.blur_kernel,
+        );
+        gl.uniform1f(
+            this.program_info.uniform_locations.kernel_weight,
+            compute_kernel_weight(this.blur_kernel),
+        );
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices)
 
