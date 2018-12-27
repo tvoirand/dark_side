@@ -1,0 +1,68 @@
+
+
+
+
+--------------------------------------------------------------------------------
+Version 0.14.1 of the 20181211.
+    -some refactoring:
+        -PostprocessingShader class created
+
+--------------------------------------------------------------------------------
+Version 0.14 of the 20181209.    
+    -postprocessing texture and framebuffer added
+        -init_framebuffer and init_postprocessing_texture functions added
+        -first drawing scene in framebuffer to which texture is attached
+        -then rendering texture to canvas with postprocessing vertex and
+        fragment shaders
+
+--------------------------------------------------------------------------------
+Version 0.13 of the 20181207.
+    -Planet vertex and fragment shaders moved inside class
+    -new Sun class created, with specific shaders (no lighting)
+
+--------------------------------------------------------------------------------
+Version 0.12 of the 20181206.
+    -docstring reformatting
+
+--------------------------------------------------------------------------------
+Version 0.11 of the 20181201.
+    -point lighting position moved out of shader string (sun_position variable
+    in main)
+    -sun as new Planet instance
+
+--------------------------------------------------------------------------------
+Version 0.10 of the 20181201.
+    -lighting added
+
+--------------------------------------------------------------------------------
+Version 0.9 of the 20181130.
+    -Planet color implemented
+    -geographic_to_cartesian_coords function output adapted to webgl
+    orientation (north-south = y-axis)
+
+--------------------------------------------------------------------------------
+Version 0.8 of the 20181130.
+    -Planet vertices and indices creation moved inside class constructor
+    -Planet shape now a sphere
+
+--------------------------------------------------------------------------------
+Version 0.7 of the 20181129.
+    -added geographic_to_cartesian_coords function
+    -added compute_sphere_data function
+    -added range function
+
+--------------------------------------------------------------------------------
+Version 0.6 of the 20181125.
+    -changing from python/pyopengl to javascript/webgl
+        -spice not implemented yet
+        -shadows not implemented yet
+
+--------------------------------------------------------------------------------
+Version 0.5 of the 20181118.
+    -error when Planet class instance as central body corrected
+
+--------------------------------------------------------------------------------
+Version 0.4 of the 20181104.
+    -Planet class now accepts an Planet class instance as central body
+    -moon display added
+    -SPICE kernels moved to upper directory to avoid copying for each version
