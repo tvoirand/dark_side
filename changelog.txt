@@ -1,5 +1,9 @@
 
 --------------------------------------------------------------------------------
+Version 0.14.3 of the 20181229.
+    -error in sun direction calculation for lighting fixed
+
+--------------------------------------------------------------------------------
 Version 0.14.2 of the 20181224.
     -gaussian blur 3x3 kernel added in PostprocessingShader
 
@@ -9,7 +13,7 @@ Version 0.14.1 of the 20181211.
         -PostprocessingShader class created
 
 --------------------------------------------------------------------------------
-Version 0.14 of the 20181209.    
+Version 0.14 of the 20181209.
     -postprocessing texture and framebuffer added
         -init_framebuffer and init_postprocessing_texture functions added
         -first drawing scene in framebuffer to which texture is attached

@@ -18,7 +18,7 @@ function main(){
     const postprocessing_texture = init_postprocessing(gl);
     const framebuffer = init_framebuffer(gl, postprocessing_texture);
 
-    sun_position = [0, 0, 20]
+    sun_position = [0, 0, -20]
 
     var earth = new Planet(
         1.25,
@@ -301,9 +301,9 @@ function Planet(
             v_color = a_vertex_color;
 
             highp vec3 ambient_light = vec3(0.3, 0.3, 0.3);
-            highp vec3 sunlight_color = vec3(1, 1, 1);
+            highp vec3 sunlight_color = vec3(1.0, 1.0, 1.0);
             highp vec3 sun_vector = u_sun_position - (
-                u_projection_matrix * u_model_view_matrix * a_vertex_position
+                u_model_view_matrix * a_vertex_position
             ).xyz;
 
             highp vec4 transformed_normal = u_normal_matrix * vec4(

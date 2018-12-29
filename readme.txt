@@ -2,10 +2,10 @@ Dark side.
 
 Display Sun, Earth (with longitudes and latitudes), and Moon.
 
-Version 0.14.2 of the 20181224.
+Version 0.14.3 of the 20181229.
 
 Added in this version:
-    -gaussian blur 3x3 kernel added in PostprocessingShader
+    -error in sun direction calculation for lighting fixed
 
 Todo:
     -get rid of gl-matrix.js dependency
