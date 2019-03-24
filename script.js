@@ -260,17 +260,32 @@ function Planet(
         -central_body   string
         -gl             WebGLRenderingContext
     Attributes:
-        -radius
-        -name
-        -color
-        -central_body
-        -vs_source
-        -fs_source
-        -program_info
-        -buffers
-        -vertices
-        -indices
-        -model_view_matrix
+        -radius             float
+        -name               str
+        -color              [float, ...]
+        -central_body       str
+        -vs_source          str
+        -fs_source          str
+        -program_info       object
+            contains:
+                attributes locations
+                    vertex position
+                    vertex color
+                    vertex normal
+                uniform locations
+                    projection matrix
+                    model view matrix
+                    normal matrix
+                    sun position
+        -buffers            object
+            contains: position, indices, color, normal buffers
+        -vertices           [float, ...]
+        -indices            [int, ...]
+        -vertices_colors    [[float, float, float, float], ...]
+        -model_view_matrix  [float, ...]
+            4x4 matrix of gl-matrix module
+        -normal_matrix      [float, ...]
+            4x4 matrix of gl-matrix module
     Methods:
         -update_position
         -display
@@ -280,6 +295,7 @@ function Planet(
     this.name = name;
     this.color = color;
     this.central_body = central_body;
+
 
     // vertex and fragment shaders
     this.vs_source = `
@@ -327,6 +343,7 @@ function Planet(
             gl_FragColor = vec4(v_color.rgb * v_lighting, v_color.a);
         }
     `;
+
 
     const shader_program = init_shader_program(
         gl,
@@ -380,6 +397,7 @@ function Planet(
         normal: normal_buffer,
     }
 
+
     // filling vertices position buffer and vertices indices buffer
     const shape_data = compute_sphere_data(this.radius);
     this.vertices = shape_data[0];
@@ -403,6 +421,7 @@ function Planet(
         gl.STATIC_DRAW,
     );
 
+
     // filling vertices colors buffer
     this.vertices_colors = [];
     for (var i = 0; i < this.vertices.length; i++){
@@ -425,6 +444,7 @@ function Planet(
         gl.STATIC_DRAW,
     );
 
+
     this.model_view_matrix = mat4.create();
     mat4.translate(
         this.model_view_matrix,
@@ -432,9 +452,11 @@ function Planet(
         [0, 0, -20]
     );
 
+
     this.normal_matrix = mat4.create();
     mat4.invert(this.normal_matrix, this.model_view_matrix);
     mat4.transpose(this.normal_matrix, this.normal_matrix);
+
 
     this.update_position = function(position_vector){
         `
@@ -585,17 +607,26 @@ function Sun(
         -central_body   string
         -gl             WebGLRenderingContext
     Attributes:
-        -radius
-        -name
-        -color
-        -central_body
-        -vs_source
-        -fs_source
-        -program_info
-        -buffers
-        -vertices
-        -indices
-        -model_view_matrix
+        -radius             float
+        -name               str
+        -color              [float, ...]
+        -central_body       str
+        -vs_source          str
+        -fs_source          str
+        -program_info       object
+            contains:
+                attributes locations
+                    vertex position
+                    vertex color
+                uniform locations
+                    projection matrix
+                    model view matrix
+        -buffers            object
+            contains: position, index, color buffers
+        -vertices           [float, ...]
+        -indices            [int, ...]
+        -model_view_matrix  [float, ...]
+            4x4 matrix of gl-matrix module
     Methods:
         -update_position
         -display
@@ -606,26 +637,27 @@ function Sun(
     this.color = color;
     this.central_body = central_body;
 
+
     this.vs_source = `
-    attribute vec4 a_vertex_position;
-    attribute vec4 a_vertex_color;
+        attribute vec4 a_vertex_position;
+        attribute vec4 a_vertex_color;
 
-    uniform mat4 u_model_view_matrix;
-    uniform mat4 u_projection_matrix;
+        uniform mat4 u_model_view_matrix;
+        uniform mat4 u_projection_matrix;
 
-    varying lowp vec4 v_color;
+        varying lowp vec4 v_color;
 
-    void main(void) {
-        gl_Position = u_projection_matrix * u_model_view_matrix * a_vertex_position;
-        v_color = a_vertex_color;
-    }
+        void main(void) {
+            gl_Position = u_projection_matrix * u_model_view_matrix * a_vertex_position;
+            v_color = a_vertex_color;
+        }
     `;
     this.fs_source = `
-    varying lowp vec4 v_color;
+        varying lowp vec4 v_color;
 
-    void main(void){
-        gl_FragColor = v_color;
-    }
+        void main(void){
+            gl_FragColor = v_color;
+        }
     `;
 
     const shader_program = init_shader_program(
@@ -667,6 +699,7 @@ function Sun(
         color: color_buffer,
     }
 
+
     // filling vertices position buffer and vertices indices buffer
     const shape_data = compute_sphere_data(this.radius);
     this.vertices = shape_data[0];
@@ -690,6 +723,7 @@ function Sun(
         gl.STATIC_DRAW,
     );
 
+
     // filling vertices colors buffer
     this.vertices_colors = [];
     for (var i = 0; i < this.vertices.length; i++){
@@ -703,12 +737,14 @@ function Sun(
         gl.STATIC_DRAW,
     );
 
+
     this.model_view_matrix = mat4.create();
     mat4.translate(
         this.model_view_matrix,
         this.model_view_matrix,
         [0, 0, -20]
     );
+
 
     this.update_position = function(position_vector){
         `
@@ -825,9 +861,31 @@ function PostprocessingShader(gl){
     `
     Class for postprocessing operations.
     Constructor arguments:
-        -gl     WebGLRenderingContext
+        -gl                 WebGLRenderingContext
     Attributes:
-        -
+        -vs_source          string
+            defines vertex shader
+        -fs_source          string
+            defines fragment shader
+        -program_info       object
+            contains:
+                shader_program,
+                attrib_locations,
+                    vertex position
+                    texture coord
+                uniform_locations
+                    screen texture
+                    texture size
+                    kernel
+                    kernel weight
+        -buffers            object
+            contains: position, indices, texutre coords buffers
+        -vertices           [float, ...]
+        -indices            [int, ...]
+        -texture_coords     [float, ...]
+        -blur_kernel        [float, ...]
+    Methods:
+        -display
     `
 
     this.vs_source = `
@@ -988,6 +1046,7 @@ function PostprocessingShader(gl){
     )
 
     this.display = function(){
+        `Display this postprocessing shader's texture on canvas`
 
         gl.useProgram(this.program_info.program)
 
