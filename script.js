@@ -446,12 +446,6 @@ function Planet(
 
 
     this.model_view_matrix = mat4.create();
-    mat4.translate(
-        this.model_view_matrix,
-        this.model_view_matrix,
-        [0, 0, -20]
-    );
-
 
     this.normal_matrix = mat4.create();
     mat4.invert(this.normal_matrix, this.model_view_matrix);
@@ -739,11 +733,6 @@ function Sun(
 
 
     this.model_view_matrix = mat4.create();
-    mat4.translate(
-        this.model_view_matrix,
-        this.model_view_matrix,
-        [0, 0, -20]
-    );
 
 
     this.update_position = function(position_vector){
