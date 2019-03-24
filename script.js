@@ -403,10 +403,6 @@ function Planet(
     this.vertices = shape_data[0];
     this.indices = shape_data[1];
 
-    for (var i = 0; i < this.vertices.length; i++){
-        this.vertices[i] *= this.radius;
-    };
-
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position);
     gl.bufferData(
         gl.ARRAY_BUFFER,
@@ -698,10 +694,6 @@ function Sun(
     const shape_data = compute_sphere_data(this.radius);
     this.vertices = shape_data[0];
     this.indices = shape_data[1];
-
-    for (var i = 0; i < this.vertices.length; i++){
-        this.vertices[i] *= this.radius;
-    };
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position);
     gl.bufferData(
