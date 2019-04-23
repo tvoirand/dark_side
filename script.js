@@ -18,11 +18,7 @@ function main(){
 	const postprocessing_texture = init_postprocessing(gl);
 
 	const framebuffer = init_framebuffer(gl, postprocessing_texture);
-
-	const depthbuffer = gl.createRenderbuffer();
-	gl.bindRenderbuffer(gl.RENDERBUFFER, depthbuffer);
-	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.canvas.clientWidth, gl.canvas.clientHeight);
-	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
+	const depthbuffer = init_renderbuffer(gl);
 
     sun_position = [0, 0, -20]
 
@@ -1272,4 +1268,30 @@ function init_framebuffer(gl, target_texture){
     if(gl.isFramebuffer(framebuffer)){
         return framebuffer
     }
+}
+
+function init_renderbuffer(gl){
+    `
+    Initiate renderbuffer.
+    Input:
+        -gl             WebGLRenderingContext object
+    Output:
+        -depthbuffer    WebGLRenderbuffer object
+    `
+
+    const depthbuffer = gl.createRenderbuffer();
+	gl.bindRenderbuffer(gl.RENDERBUFFER, depthbuffer);
+	gl.renderbufferStorage(
+        gl.RENDERBUFFER,
+        gl.DEPTH_COMPONENT16,
+        gl.canvas.clientWidth,
+        gl.canvas.clientHeight
+    );
+	gl.framebufferRenderbuffer(
+        gl.FRAMEBUFFER,
+        gl.DEPTH_ATTACHMENT,
+        gl.RENDERBUFFER,
+        depthbuffer
+    );
+
 }
