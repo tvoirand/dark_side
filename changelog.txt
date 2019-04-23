@@ -1,6 +1,10 @@
 Changelog for dark_side.
 
 --------------------------------------------------------------------------------
+Version 0.16.0 of the 20190423.
+    -fixed postprocessing lighting glitch
+
+--------------------------------------------------------------------------------
 Version 0.15.0 of the 20190324.
     -removed postprocessing for a fresh start
 
