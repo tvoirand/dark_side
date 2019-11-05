@@ -2,7 +2,26 @@
 Main script for the dark_side project.
 */
 
-spice = new SpiceSimulation;
+import { range } from "./modules/utils.js";
+import {
+    compute_sphere_data,
+    geographic_to_cartesian_coords
+} from "./modules/geometry.js";
+import { SpiceSimulation } from "./modules/spice_simulation.js";
+import { Sun } from "./modules/graphics/sun.js";
+import { Planet } from "./modules/graphics/planet.js";
+import {
+    init_webgl_context,
+    init_shader_program,
+    init_framebuffer,
+    init_renderbuffer
+} from "./modules/graphics/webgl_utils.js";
+import {
+    PostprocessingShader,
+    init_postprocessing
+} from "./modules/graphics/post_processing.js";
+
+const spice = new SpiceSimulation;
 
 
 main();
@@ -17,15 +36,15 @@ function main(){
         return
     };
 
-    projection_matrix = init_webgl_context(gl);
+    var projection_matrix = init_webgl_context(gl);
 
-	postprocessing_shader = new PostprocessingShader(gl);
+	var postprocessing_shader = new PostprocessingShader(gl);
 	const postprocessing_texture = init_postprocessing(gl);
 
 	const framebuffer = init_framebuffer(gl, postprocessing_texture);
 	const depthbuffer = init_renderbuffer(gl);
 
-    sun_position = [0, 0, -20]
+    var sun_position = [0, 0, -20]
 
     var earth = new Planet(
         1.25,
@@ -48,7 +67,7 @@ function main(){
         "SUN",
         gl,
     )
-    objects_to_draw = [
+    var objects_to_draw = [
         earth,
         moon,
         sun,
@@ -88,7 +107,7 @@ function main(){
 
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             objects_to_draw.forEach(function(planet){
-                planet.display()
+                planet.display(projection_matrix, sun_position)
             });
         }
 

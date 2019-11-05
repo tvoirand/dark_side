@@ -3,6 +3,9 @@ Post-processing graphics module for the dark_side project.
 */
 
 
+import { init_shader_program } from "./webgl_utils.js"
+
+
 function compute_kernel_weight(kernel){
     var weight = kernel.reduce(function(prev, curr){
         return prev + curr;
@@ -307,3 +310,6 @@ function init_postprocessing(gl){
 
     return texture
 }
+
+
+export { PostprocessingShader, init_postprocessing }

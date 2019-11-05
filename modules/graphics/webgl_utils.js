@@ -165,3 +165,11 @@ function init_renderbuffer(gl){
     );
 
 }
+
+
+export {
+    init_webgl_context,
+    init_shader_program,
+    init_framebuffer,
+    init_renderbuffer
+}

@@ -3,6 +3,10 @@ Module defining planets for the dark_side project.
 */
 
 
+import { init_shader_program } from "./webgl_utils.js"
+import { compute_sphere_data } from "../geometry.js"
+
+
 function Planet(
     radius,
     name,
@@ -236,9 +240,12 @@ function Planet(
         );
     };
 
-    this.display = function(){
+    this.display = function(projection_matrix, sun_position){
         `
         Display planet.
+        Input:
+            -projection_matrix  mat4 matrix
+            -sun_position       [float, float, float]
         `
 
         gl.useProgram(this.program_info.program)
@@ -339,3 +346,6 @@ function Planet(
     }
 
 }
+
+
+export { Planet }

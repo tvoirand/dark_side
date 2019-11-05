@@ -3,6 +3,9 @@ Geometry module for the dark_side project.
 */
 
 
+import {range} from "./utils.js"
+
+
 function compute_sphere_data(radius){
     `
     Compute sphere vertices coordinates and indices.
@@ -65,3 +68,6 @@ function geographic_to_cartesian_coords(lat, lon, r){
         r * Math.sin(lon) * Math.cos(lat),
     ]
 }
+
+
+export {compute_sphere_data, geographic_to_cartesian_coords}

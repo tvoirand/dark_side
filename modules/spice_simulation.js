@@ -65,3 +65,6 @@ function SpiceSimulation(){
         ];
     };
 }
+
+
+export { SpiceSimulation }

@@ -16,3 +16,6 @@ function range(first, last, step) {
     var size = (last - first) / step + 1;
     return [...Array(size).keys()].map(i => i * step + first);
 }
+
+
+export { range }
