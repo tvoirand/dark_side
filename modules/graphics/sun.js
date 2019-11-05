@@ -2,18 +2,10 @@
 Module defining sun for the dark_side project.
 */
 
+import { init_shader_program } from "./webgl_utils.js";
+import { compute_sphere_data } from "../geometry.js";
 
-import { init_shader_program } from "./webgl_utils.js"
-import { compute_sphere_data } from "../geometry.js"
-
-
-function Sun(
-    radius,
-    name,
-    color,
-    central_body,
-    gl,
-){
+function Sun(radius, name, color, central_body, gl) {
     `
     Class describing a Sun.
     Constructor arguments:
@@ -46,13 +38,12 @@ function Sun(
     Methods:
         -update_position
         -display
-    `
+    `;
 
     this.radius = radius;
     this.name = name;
     this.color = color;
     this.central_body = central_body;
-
 
     this.vs_source = `
         attribute vec4 a_vertex_position;
@@ -88,10 +79,7 @@ function Sun(
                 shader_program,
                 "a_vertex_position"
             ),
-            vertex_color: gl.getAttribLocation(
-                shader_program,
-                "a_vertex_color",
-            )
+            vertex_color: gl.getAttribLocation(shader_program, "a_vertex_color")
         },
         uniform_locations: {
             projection_matrix: gl.getUniformLocation(
@@ -105,16 +93,15 @@ function Sun(
         }
     };
 
-    const position_buffer = gl.createBuffer()
-    const index_buffer = gl.createBuffer()
-    const color_buffer = gl.createBuffer()
+    const position_buffer = gl.createBuffer();
+    const index_buffer = gl.createBuffer();
+    const color_buffer = gl.createBuffer();
 
     this.buffers = {
         position: position_buffer,
         indices: index_buffer,
-        color: color_buffer,
-    }
-
+        color: color_buffer
+    };
 
     // filling vertices position buffer and vertices indices buffer
     const shape_data = compute_sphere_data(this.radius);
@@ -125,40 +112,37 @@ function Sun(
     gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(this.vertices),
-        gl.STATIC_DRAW,
+        gl.STATIC_DRAW
     );
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
     gl.bufferData(
         gl.ELEMENT_ARRAY_BUFFER,
         new Uint16Array(this.indices),
-        gl.STATIC_DRAW,
+        gl.STATIC_DRAW
     );
-
 
     // filling vertices colors buffer
     this.vertices_colors = [];
-    for (var i = 0; i < this.vertices.length; i++){
-        this.vertices_colors = this.vertices_colors.concat(this.color)
+    for (var i = 0; i < this.vertices.length; i++) {
+        this.vertices_colors = this.vertices_colors.concat(this.color);
     }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color);
     gl.bufferData(
         gl.ARRAY_BUFFER,
         new Float32Array(this.vertices_colors),
-        gl.STATIC_DRAW,
+        gl.STATIC_DRAW
     );
-
 
     this.model_view_matrix = mat4.create();
 
-
-    this.update_position = function(position_vector){
+    this.update_position = function(position_vector) {
         `
         Set planet position by updating its model view matrix.
         Input:
             -position_vector    [float, float, float]
-        `
+        `;
 
         mat4.set(
             this.model_view_matrix,
@@ -182,24 +166,24 @@ function Sun(
         );
     };
 
-    this.display = function(projection_matrix, sun_position){
+    this.display = function(projection_matrix, sun_position) {
         `
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
-        `
+        `;
 
-        gl.useProgram(this.program_info.program)
+        gl.useProgram(this.program_info.program);
 
         // fetch vertices positions from buffer
         {
             const nb_components = 3; // nb values per vertex in buffer
             const type = gl.FLOAT;
             const normalize = false;
-            const stride = 0
-            const offset = 0
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position)
+            const stride = 0;
+            const offset = 0;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.position);
             gl.vertexAttribPointer(
                 this.program_info.attrib_locations.vertex_position,
                 nb_components,
@@ -207,10 +191,10 @@ function Sun(
                 normalize,
                 stride,
                 offset
-            )
+            );
             gl.enableVertexAttribArray(
                 this.program_info.attrib_locations.vertex_position
-            )
+            );
         }
 
         // fetch vertices colors from buffer
@@ -218,9 +202,9 @@ function Sun(
             const nb_components = 4; // nb values per vertex in buffer
             const type = gl.FLOAT;
             const normalize = false;
-            const stride = 0
-            const offset = 0
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color)
+            const stride = 0;
+            const offset = 0;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.color);
             gl.vertexAttribPointer(
                 this.program_info.attrib_locations.vertex_color,
                 nb_components,
@@ -228,36 +212,33 @@ function Sun(
                 normalize,
                 stride,
                 offset
-            )
+            );
             gl.enableVertexAttribArray(
                 this.program_info.attrib_locations.vertex_color
-            )
+            );
         }
 
         gl.uniformMatrix4fv(
             this.program_info.uniform_locations.model_view_matrix,
             false,
             this.model_view_matrix
-        )
+        );
         gl.uniformMatrix4fv(
             this.program_info.uniform_locations.projection_matrix,
             false,
             projection_matrix
-        )
+        );
 
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
 
         // draw
         {
-            const offset = 0
-            const vertex_count = this.indices.length
-            const type = gl.UNSIGNED_SHORT
-            gl.drawElements(gl.TRIANGLES, vertex_count, type, offset)
+            const offset = 0;
+            const vertex_count = this.indices.length;
+            const type = gl.UNSIGNED_SHORT;
+            gl.drawElements(gl.TRIANGLES, vertex_count, type, offset);
         }
-    }
-
+    };
 }
 
-
-export { Sun }
+export { Sun };
