@@ -6,7 +6,7 @@ import { init_shader_program } from "./webgl_utils.js";
 import { compute_sphere_data } from "../geometry.js";
 
 function Sun(radius, name, color, central_body, gl) {
-    `
+    /*
     Class describing a Sun.
     Constructor arguments:
         -radius         float
@@ -38,7 +38,7 @@ function Sun(radius, name, color, central_body, gl) {
     Methods:
         -update_position
         -display
-    `;
+    */
 
     this.radius = radius;
     this.name = name;
@@ -138,11 +138,11 @@ function Sun(radius, name, color, central_body, gl) {
     this.model_view_matrix = mat4.create();
 
     this.update_position = function(position_vector) {
-        `
+        /*
         Set planet position by updating its model view matrix.
         Input:
             -position_vector    [float, float, float]
-        `;
+        */
 
         mat4.set(
             this.model_view_matrix,
@@ -167,12 +167,12 @@ function Sun(radius, name, color, central_body, gl) {
     };
 
     this.display = function(projection_matrix, sun_position) {
-        `
+        /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
-        `;
+        */
 
         gl.useProgram(this.program_info.program);
 

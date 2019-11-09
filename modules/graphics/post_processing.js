@@ -12,7 +12,7 @@ function compute_kernel_weight(kernel) {
 }
 
 function PostprocessingShader(gl) {
-    `
+    /*
     Class for postprocessing operations.
     Constructor arguments:
         -gl                 WebGLRenderingContext
@@ -40,7 +40,7 @@ function PostprocessingShader(gl) {
         -blur_kernel        [float, ...]
     Methods:
         -display
-    `;
+    */
 
     this.vs_source = `
         attribute vec4 a_vertex_position;
@@ -196,7 +196,9 @@ function PostprocessingShader(gl) {
     );
 
     this.display = function() {
-        `Display this postprocessing shader's texture on canvas`;
+        /*
+        Display this postprocessing shader's texture on canvas
+        */
 
         gl.useProgram(this.program_info.program);
 
@@ -269,13 +271,13 @@ function PostprocessingShader(gl) {
 }
 
 function init_postprocessing(gl) {
-    `
+    /*
     Create, and bind empty texture fitting the canvas.
     Input:
         -gl         WebGLRenderingContext object
     Output:
         -texture    WebGLTexture object
-    `;
+    */
 
     // creating texture to render to
     const texture_width = gl.canvas.clientWidth;

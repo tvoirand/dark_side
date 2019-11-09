@@ -5,14 +5,14 @@ Geometry module for the dark_side project.
 import { range } from "./utils.js";
 
 function compute_sphere_data(radius) {
-    `
+    /*
     Compute sphere vertices coordinates and indices.
     Input:
         -radius     float
     Output: array containing:
         -sphere_vertices  [float, ...]
         -sphere_indices   [int, ...]
-    `;
+    */
 
     const lat = range(-90, 90, 10);
     const lon = range(0, 360, 10);
@@ -46,7 +46,7 @@ function compute_sphere_data(radius) {
 }
 
 function geographic_to_cartesian_coords(lat, lon, r) {
-    `
+    /*
     Conversion from geographic coordinates to cartesian coordinates.
     South-North axis set as Y-axis for webgl compatibility
     Input:
@@ -54,7 +54,7 @@ function geographic_to_cartesian_coords(lat, lon, r) {
         -lon    float
         -r      float
     Output:     [float, float, float]
-    `;
+    */
 
     lat = lat * Math.PI / 180;
     lon = lon * Math.PI / 180;

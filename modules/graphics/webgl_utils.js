@@ -3,13 +3,13 @@ Utils module for using WebGL for the dark_side project.
 */
 
 function init_webgl_context(gl) {
-    `
+    /*
     Initiate WebGL context and create perspective matrix.
     Input:
         -gl                 WebGLRenderingContext object
     Output:
         -projection_matrix  mat4 matrix
-    `;
+    */
 
     // initiate some WebGL context
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -29,7 +29,7 @@ function init_webgl_context(gl) {
 }
 
 function init_shader_program(gl, vs_source, fs_source) {
-    `
+    /*
     Create a shader program based on vertex and fragment shader GLSL strings.
     Input:
         -vs_source       string
@@ -38,7 +38,7 @@ function init_shader_program(gl, vs_source, fs_source) {
             contains GLSL source code to set
     Output:
         -shader_program  WebGLProgram object
-    `;
+    */
 
     const vertex_shader = load_shader(gl, gl.VERTEX_SHADER, vs_source);
     const fragment_shader = load_shader(gl, gl.FRAGMENT_SHADER, fs_source);
@@ -70,7 +70,7 @@ function init_shader_program(gl, vs_source, fs_source) {
 }
 
 function load_shader(gl, type, source) {
-    `
+    /*
     Create shader of given type based on a string GLSL shader source.
     Input:
         -gl         WebGLRenderingContext object
@@ -79,7 +79,7 @@ function load_shader(gl, type, source) {
             contains GLSL source code to set
     Output:
         -shader     WebGLShader object
-    `;
+    */
 
     const shader = gl.createShader(type);
 
@@ -103,14 +103,14 @@ function load_shader(gl, type, source) {
 }
 
 function init_framebuffer(gl, target_texture) {
-    `
+    /*
     Create, bind, and attach framebuffer to texture.
     Input:
         -gl                 WebGLRenderingContext object
         -target_texture     WebGLTexture object
     Output:
         -framebuffer        WebGLFramebuffer object
-    `;
+    */
 
     // creating and binding framebuffer
     const framebuffer = gl.createFramebuffer();
@@ -132,13 +132,13 @@ function init_framebuffer(gl, target_texture) {
 }
 
 function init_renderbuffer(gl) {
-    `
+    /*
     Initiate renderbuffer.
     Input:
         -gl             WebGLRenderingContext object
     Output:
         -depthbuffer    WebGLRenderbuffer object
-    `;
+    */
 
     const depthbuffer = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, depthbuffer);
