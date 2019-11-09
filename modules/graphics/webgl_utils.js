@@ -154,6 +154,10 @@ function init_renderbuffer(gl) {
         gl.RENDERBUFFER,
         depthbuffer
     );
+
+    if (gl.isRenderbuffer(depthbuffer)) {
+        return depthbuffer;
+    }
 }
 
 export {
