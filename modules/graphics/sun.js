@@ -45,25 +45,26 @@ function Sun(radius, name, color, central_body, gl) {
     this.color = color;
     this.central_body = central_body;
 
-    this.vs_source = `
-        attribute vec4 a_vertex_position;
-        attribute vec4 a_vertex_color;
+    this.vs_source = `#version 300 es
+        in vec4 a_vertex_position;
+        in vec4 a_vertex_color;
 
         uniform mat4 u_model_view_matrix;
         uniform mat4 u_projection_matrix;
 
-        varying lowp vec4 v_color;
+        out lowp vec4 v_color;
 
         void main(void) {
             gl_Position = u_projection_matrix * u_model_view_matrix * a_vertex_position;
             v_color = a_vertex_color;
         }
     `;
-    this.fs_source = `
-        varying lowp vec4 v_color;
+    this.fs_source = `#version 300 es
+        in lowp vec4 v_color;
+        out mediump vec4 FragColor;
 
         void main(void){
-            gl_FragColor = v_color;
+            FragColor = v_color;
         }
     `;
 

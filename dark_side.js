@@ -27,7 +27,7 @@ main();
 
 function main() {
     const canvas = document.querySelector("canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl2");
     if (!gl) {
         alert("WebGL not supported.");
         return;

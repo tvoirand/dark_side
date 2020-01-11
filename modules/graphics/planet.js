@@ -52,18 +52,18 @@ function Planet(radius, name, color, central_body, gl) {
     this.central_body = central_body;
 
     // vertex and fragment shaders
-    this.vs_source = `
-        attribute vec4 a_vertex_position;
-        attribute vec4 a_vertex_color;
-        attribute vec3 a_vertex_normal;
+    this.vs_source = `#version 300 es
+        in vec4 a_vertex_position;
+        in vec4 a_vertex_color;
+        in vec3 a_vertex_normal;
 
         uniform mat4 u_model_view_matrix;
         uniform mat4 u_projection_matrix;
         uniform mat4 u_normal_matrix;
         uniform vec3 u_sun_position;
 
-        varying lowp vec4 v_color;
-        varying highp vec3 v_lighting;
+        out lowp vec4 v_color;
+        out highp vec3 v_lighting;
 
         void main(void) {
             gl_Position = u_projection_matrix * u_model_view_matrix * \
@@ -89,12 +89,13 @@ function Planet(radius, name, color, central_body, gl) {
             v_lighting = ambient_light + (sunlight_color * direction_to_sun);
         }
     `;
-    this.fs_source = `
-        varying lowp vec4 v_color;
-        varying highp vec3 v_lighting;
+    this.fs_source = `#version 300 es
+        in lowp vec4 v_color;
+        in highp vec3 v_lighting;
+        out mediump vec4 FragColor;
 
         void main(void){
-            gl_FragColor = vec4(v_color.rgb * v_lighting, v_color.a);
+            FragColor = vec4(v_color.rgb * v_lighting, v_color.a);
         }
     `;
 

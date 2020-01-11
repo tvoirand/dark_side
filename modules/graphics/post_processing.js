@@ -43,10 +43,10 @@ function PostprocessingShader(gl) {
         -display
     */
 
-    this.vs_source = `
-        attribute vec4 a_vertex_position;
-        attribute vec2 a_texture_coord;
-        varying highp vec2 v_texture_coord;
+    this.vs_source = `#version 300 es
+        in vec4 a_vertex_position;
+        in vec2 a_texture_coord;
+        out highp vec2 v_texture_coord;
         void main(void){
             gl_Position = a_vertex_position;
             v_texture_coord = a_texture_coord;
