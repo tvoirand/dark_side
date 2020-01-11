@@ -61,10 +61,12 @@ function Sun(radius, name, color, central_body, gl) {
     `;
     this.fs_source = `#version 300 es
         in lowp vec4 v_color;
-        out mediump vec4 FragColor;
+        layout(location = 0) out mediump vec4 FragColor;
+        layout(location = 1) out mediump vec4 BrightColor;
 
         void main(void){
             FragColor = v_color;
+            BrightColor = FragColor;
         }
     `;
 

@@ -37,8 +37,12 @@ function main() {
 
     var postprocessing_shader = new PostprocessingShader(gl);
     const postprocessing_texture = init_postprocessing(gl);
+    const postprocessing_texture_bright = init_postprocessing(gl);
 
-    const framebuffer = init_framebuffer(gl, postprocessing_texture);
+    const framebuffer = init_framebuffer(gl, [
+        postprocessing_texture,
+        postprocessing_texture_bright
+    ]);
     const depthbuffer = init_renderbuffer(gl);
 
     var sun_position = [0, 0, -20];

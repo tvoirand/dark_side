@@ -102,12 +102,12 @@ function load_shader(gl, type, source) {
     return shader;
 }
 
-function init_framebuffer(gl, target_texture) {
+function init_framebuffer(gl, target_textures) {
     /*
     Create, bind, and attach framebuffer to texture.
     Input:
         -gl                 WebGLRenderingContext object
-        -target_texture     WebGLTexture object
+        -target_textures    [WebGLTexture object, WebGLTexture object]
     Output:
         -framebuffer        WebGLFramebuffer object
     */
@@ -116,15 +116,26 @@ function init_framebuffer(gl, target_texture) {
     const framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-    // attach texture
-    const attachment_point = gl.COLOR_ATTACHMENT0;
+    // attach textures
+    const attachment_point_0 = gl.COLOR_ATTACHMENT0;
     gl.framebufferTexture2D(
         gl.FRAMEBUFFER,
-        attachment_point,
+        attachment_point_0,
         gl.TEXTURE_2D,
-        target_texture,
+        target_textures[0],
         0
     );
+    const attachment_point_1 = gl.COLOR_ATTACHMENT1;
+    gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        attachment_point_1,
+        gl.TEXTURE_2D,
+        target_textures[1],
+        0
+    );
+
+    // specify draw buffers to which fragments color are written into
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
 
     // check that framebuffer was created successfully
     if (gl.isFramebuffer(framebuffer)) {
@@ -140,7 +151,6 @@ function init_renderbuffer(gl) {
     Output:
         -depthbuffer    WebGLRenderbuffer object
     */
-
 
     // creating and binding renderbuffer
     const depthbuffer = gl.createRenderbuffer();
