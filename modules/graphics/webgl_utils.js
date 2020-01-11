@@ -126,6 +126,7 @@ function init_framebuffer(gl, target_texture) {
         0
     );
 
+    // check that framebuffer was created successfully
     if (gl.isFramebuffer(framebuffer)) {
         return framebuffer;
     }
@@ -140,14 +141,20 @@ function init_renderbuffer(gl) {
         -depthbuffer    WebGLRenderbuffer object
     */
 
+
+    // creating and binding renderbuffer
     const depthbuffer = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, depthbuffer);
+
+    // create and initialize renderbuffer data store
     gl.renderbufferStorage(
         gl.RENDERBUFFER,
         gl.DEPTH_COMPONENT16,
         gl.canvas.clientWidth,
         gl.canvas.clientHeight
     );
+
+    // attach renderbuffer to framebuffer
     gl.framebufferRenderbuffer(
         gl.FRAMEBUFFER,
         gl.DEPTH_ATTACHMENT,
@@ -155,6 +162,7 @@ function init_renderbuffer(gl) {
         depthbuffer
     );
 
+    // check that renderbuffer was created successfully
     if (gl.isRenderbuffer(depthbuffer)) {
         return depthbuffer;
     }
