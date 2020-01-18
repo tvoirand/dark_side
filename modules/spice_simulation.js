@@ -20,6 +20,8 @@ function SpiceSimulation() {
             -correction     string
             -central_body   string
                 spice compatible planet name
+        Output:
+            -               [float, float, float]
         */
 
         if (name == "EARTH") {

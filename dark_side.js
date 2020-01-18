@@ -49,7 +49,7 @@ function main() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         objects_to_draw.forEach(function(object) {
-            object.display(projection_matrix, sun.position);
+            object.display(projection_matrix, sun.position, object.position);
         });
 
         requestAnimationFrame(render);

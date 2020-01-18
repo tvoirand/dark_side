@@ -95,6 +95,10 @@ function Planet(radius, name, color, central_body, gl) {
             sun_position: gl.getUniformLocation(
                 shader_program,
                 "u_sun_position"
+            ),
+            planet_position: gl.getUniformLocation(
+                shader_program,
+                "u_planet_position"
             )
         }
     };
@@ -186,12 +190,13 @@ function Planet(radius, name, color, central_body, gl) {
         );
     };
 
-    this.display = function(projection_matrix, sun_position) {
+    this.display = function(projection_matrix, sun_position, planet_position) {
         /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
+            -planet_position    [float, float, float]
         */
 
         // update planet position
@@ -299,6 +304,10 @@ function Planet(radius, name, color, central_body, gl) {
         gl.uniform3fv(
             this.program_info.uniform_locations.sun_position,
             sun_position
+        );
+        gl.uniform3fv(
+            this.program_info.uniform_locations.planet_position,
+            planet_position
         );
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
