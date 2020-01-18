@@ -4,6 +4,8 @@ Module defining Sun for the dark_side project.
 
 import { init_shader_program } from "./webgl_utils.js";
 import { compute_sphere_data } from "../geometry.js";
+import sun_vs from "./shaders/sun_vs.js";
+import sun_fs from "./shaders/sun_fs.js";
 
 function Sun(radius, name, color, central_body, gl) {
     /*
@@ -45,27 +47,8 @@ function Sun(radius, name, color, central_body, gl) {
     this.color = color;
     this.central_body = central_body;
 
-    this.vs_source = `
-        attribute vec4 a_vertex_position;
-        attribute vec4 a_vertex_color;
-
-        uniform mat4 u_model_view_matrix;
-        uniform mat4 u_projection_matrix;
-
-        varying lowp vec4 v_color;
-
-        void main(void) {
-            gl_Position = u_projection_matrix * u_model_view_matrix * a_vertex_position;
-            v_color = a_vertex_color;
-        }
-    `;
-    this.fs_source = `
-        varying lowp vec4 v_color;
-
-        void main(void){
-            gl_FragColor = v_color;
-        }
-    `;
+    this.vs_source = sun_vs;
+    this.fs_source = sun_fs;
 
     const shader_program = init_shader_program(
         gl,
