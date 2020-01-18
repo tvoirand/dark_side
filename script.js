@@ -1,5 +1,5 @@
 
-spice = new SpiceSimulation;
+var spice = new SpiceSimulation;
 
 main();
 
@@ -12,9 +12,9 @@ function main(){
         return
     };
 
-    projection_matrix = init_webgl_context(gl);
+    var projection_matrix = init_webgl_context(gl);
 
-    sun_position = [0, 0, -20]
+    const sun_position = [0, 0, -20]
 
     var earth = new Planet(
         1.25,
@@ -37,7 +37,7 @@ function main(){
         "SUN",
         gl,
     )
-    objects_to_draw = [
+    var objects_to_draw = [
         earth,
         moon,
         sun,
@@ -65,7 +65,7 @@ function main(){
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         objects_to_draw.forEach(function(planet){
-            planet.display()
+            planet.display(projection_matrix, sun_position)
         });
 
         requestAnimationFrame(render);
@@ -447,9 +447,12 @@ function Planet(
         );
     };
 
-    this.display = function(){
+    this.display = function(projection_matrix, sun_position){
         `
         Display planet.
+        Input:
+            -projection_matrix  mat4 matrix
+            -sun_position       [float, float, float]
         `
 
         gl.useProgram(this.program_info.program)
@@ -726,9 +729,12 @@ function Sun(
         );
     };
 
-    this.display = function(){
+    this.display = function(projection_matrix, sun_position){
         `
         Display planet.
+        Input:
+            -projection_matrix  mat4 matrix
+            -sun_position       [float, float, float]
         `
 
         gl.useProgram(this.program_info.program)
