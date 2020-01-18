@@ -1,6 +1,10 @@
 Changelog for dark_side.
 
 --------------------------------------------------------------------------------
+Version 0.15.1 of the 20200118.
+    -improved code structure by adding modules
+
+--------------------------------------------------------------------------------
 Version 0.15.0 of the 20190324.
     -removed postprocessing for a fresh start
 
