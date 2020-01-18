@@ -7,17 +7,19 @@ import { compute_sphere_data } from "../geometry.js";
 import sun_vs from "./shaders/sun_vs.js";
 import sun_fs from "./shaders/sun_fs.js";
 
-function Sun(radius, name, color, central_body, gl) {
+function Sun(radius, position, name, color, central_body, gl) {
     /*
     Class describing a Sun.
     Constructor arguments:
         -radius         float
+        -position       [float, float, float]
         -name           string
         -color          [float, float, float, float]
         -central_body   string
         -gl             WebGLRenderingContext
     Attributes:
         -radius             float
+        -position           [float, float, float]
         -name               str
         -color              [float, ...]
         -central_body       str
@@ -43,6 +45,7 @@ function Sun(radius, name, color, central_body, gl) {
     */
 
     this.radius = radius;
+    this.position = position;
     this.name = name;
     this.color = color;
     this.central_body = central_body;
@@ -156,6 +159,28 @@ function Sun(radius, name, color, central_body, gl) {
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
         */
+
+        // update position
+        mat4.set(
+            this.model_view_matrix,
+            this.model_view_matrix[0],
+            this.model_view_matrix[1],
+            this.model_view_matrix[2],
+            this.model_view_matrix[3],
+            this.model_view_matrix[4],
+            this.model_view_matrix[5],
+            this.model_view_matrix[6],
+            this.model_view_matrix[7],
+            this.model_view_matrix[8],
+            this.model_view_matrix[9],
+            this.model_view_matrix[10],
+            this.model_view_matrix[11],
+            this.position[0],
+            this.position[1],
+            this.position[2],
+            this.model_view_matrix[15],
+            this.model_view_matrix[16]
+        );
 
         gl.useProgram(this.program_info.program);
 

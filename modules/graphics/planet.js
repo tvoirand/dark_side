@@ -20,6 +20,7 @@ function Planet(radius, name, color, central_body, gl) {
         -radius             float
         -name               str
         -color              [float, ...]
+        -position           [float, float, float]
         -central_body       str
         -vs_source          str
         -fs_source          str
@@ -44,7 +45,6 @@ function Planet(radius, name, color, central_body, gl) {
         -normal_matrix      [float, ...]
             4x4 matrix of gl-matrix module
     Methods:
-        -update_position
         -display
     */
 
@@ -52,6 +52,7 @@ function Planet(radius, name, color, central_body, gl) {
     this.name = name;
     this.color = color;
     this.central_body = central_body;
+    this.position = [0.0, 0.0, 0.0];
 
     // vertex and fragment shaders
     this.vs_source = planet_vs;
@@ -192,6 +193,28 @@ function Planet(radius, name, color, central_body, gl) {
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
         */
+
+        // update planet position
+        mat4.set(
+            this.model_view_matrix,
+            this.model_view_matrix[0],
+            this.model_view_matrix[1],
+            this.model_view_matrix[2],
+            this.model_view_matrix[3],
+            this.model_view_matrix[4],
+            this.model_view_matrix[5],
+            this.model_view_matrix[6],
+            this.model_view_matrix[7],
+            this.model_view_matrix[8],
+            this.model_view_matrix[9],
+            this.model_view_matrix[10],
+            this.model_view_matrix[11],
+            this.position[0],
+            this.position[1],
+            this.position[2],
+            this.model_view_matrix[15],
+            this.model_view_matrix[16]
+        );
 
         gl.useProgram(this.program_info.program);
 
