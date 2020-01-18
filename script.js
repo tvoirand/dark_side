@@ -49,28 +49,28 @@ function main() {
 }
 
 function range(first, last, step) {
-    `
+    /*
     Range function.
     Input:
         -first  float
         -last   float
         -step   float
     Output:     [float, ...]
-    `;
+    */
 
     var size = (last - first) / step + 1;
     return [...Array(size).keys()].map(i => i * step + first);
 }
 
 function compute_sphere_data(radius) {
-    `
+    /*
     Compute sphere vertices coordinates and indices.
     Input:
         -radius     float
     Output: array containing:
         -sphere_vertices  [float, ...]
         -sphere_indices   [int, ...]
-    `;
+    */
 
     const lat = range(-90, 90, 10);
     const lon = range(0, 360, 10);
@@ -104,7 +104,7 @@ function compute_sphere_data(radius) {
 }
 
 function geographic_to_cartesian_coords(lat, lon, r) {
-    `
+    /*
     Conversion from geographic coordinates to cartesian coordinates.
     South-North axis set as Y-axis for webgl compatibility
     Input:
@@ -112,7 +112,7 @@ function geographic_to_cartesian_coords(lat, lon, r) {
         -lon    float
         -r      float
     Output:     [float, float, float]
-    `;
+    */
 
     lat = lat * Math.PI / 180;
     lon = lon * Math.PI / 180;
@@ -124,12 +124,12 @@ function geographic_to_cartesian_coords(lat, lon, r) {
 }
 
 function SpiceSimulation() {
-    `
+    /*
     To compute planets positions and orientations until spice is implemented.
-    `;
+    */
 
     this.spkpos = function(name, time, frame, correction, central_body) {
-        `
+        /*
         Give planet position.
         Input:
             -name           string
@@ -141,7 +141,7 @@ function SpiceSimulation() {
             -correction     string
             -central_body   string
                 spice compatible planet name
-        `;
+        */
 
         if (name == "EARTH") {
             return [7.0 * Math.cos(time), 7.0 * Math.sin(time), -20];
@@ -159,7 +159,7 @@ function SpiceSimulation() {
     };
 
     this.pxform = function(frame, name, time) {
-        `
+        /*
         Give planet orientation.
         Input:
             -frame          string
@@ -168,14 +168,14 @@ function SpiceSimulation() {
                 spice compatible IAU planet name
             -time           float
                 et time
-        `;
+        */
 
         return [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
     };
 }
 
 function Planet(radius, name, color, central_body, gl) {
-    `
+    /*
     Class describing a Planet.
     Constructor arguments:
         -radius         float
@@ -213,7 +213,7 @@ function Planet(radius, name, color, central_body, gl) {
     Methods:
         -update_position
         -display
-    `;
+    */
 
     this.radius = radius;
     this.name = name;
@@ -367,11 +367,11 @@ function Planet(radius, name, color, central_body, gl) {
     mat4.transpose(this.normal_matrix, this.normal_matrix);
 
     this.update_position = function(position_vector) {
-        `
+        /*
         Set planet position by updating its model view matrix.
         Input:
             -position_vector    [float, float, float]
-        `;
+        */
 
         mat4.set(
             this.model_view_matrix,
@@ -396,12 +396,12 @@ function Planet(radius, name, color, central_body, gl) {
     };
 
     this.display = function(projection_matrix, sun_position) {
-        `
+        /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
-        `;
+        */
 
         gl.useProgram(this.program_info.program);
 
@@ -501,7 +501,7 @@ function Planet(radius, name, color, central_body, gl) {
 }
 
 function Sun(radius, name, color, central_body, gl) {
-    `
+    /*
     Class describing a Sun.
     Constructor arguments:
         -radius         float
@@ -533,7 +533,7 @@ function Sun(radius, name, color, central_body, gl) {
     Methods:
         -update_position
         -display
-    `;
+    */
 
     this.radius = radius;
     this.name = name;
@@ -633,11 +633,11 @@ function Sun(radius, name, color, central_body, gl) {
     this.model_view_matrix = mat4.create();
 
     this.update_position = function(position_vector) {
-        `
+        /*
         Set planet position by updating its model view matrix.
         Input:
             -position_vector    [float, float, float]
-        `;
+        */
 
         mat4.set(
             this.model_view_matrix,
@@ -662,12 +662,12 @@ function Sun(radius, name, color, central_body, gl) {
     };
 
     this.display = function(projection_matrix, sun_position) {
-        `
+        /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
-        `;
+        */
 
         gl.useProgram(this.program_info.program);
 
@@ -737,13 +737,13 @@ function Sun(radius, name, color, central_body, gl) {
 }
 
 function init_webgl_context(gl) {
-    `
+    /*
     Initiate WebGL context and create perspective matrix.
     Input:
         -gl                 WebGLRenderingContext object
     Output:
         -projection_matrix  mat4 matrix
-    `;
+    */
 
     // initiate some WebGL context
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -763,7 +763,7 @@ function init_webgl_context(gl) {
 }
 
 function init_shader_program(gl, vs_source, fs_source) {
-    `
+    /*
     Create a shader program based on vertex and fragment shader GLSL strings.
     Input:
         -vs_source       string
@@ -772,7 +772,7 @@ function init_shader_program(gl, vs_source, fs_source) {
             contains GLSL source code to set
     Output:
         -shader_program  WebGLProgram object
-    `;
+    */
 
     const vertex_shader = load_shader(gl, gl.VERTEX_SHADER, vs_source);
     const fragment_shader = load_shader(gl, gl.FRAGMENT_SHADER, fs_source);
@@ -804,7 +804,7 @@ function init_shader_program(gl, vs_source, fs_source) {
 }
 
 function load_shader(gl, type, source) {
-    `
+    /*
     Create shader of given type based on a string GLSL shader source.
     Input:
         -gl         WebGLRenderingContext object
@@ -813,7 +813,7 @@ function load_shader(gl, type, source) {
             contains GLSL source code to set
     Output:
         -shader     WebGLShader object
-    `;
+    */
 
     const shader = gl.createShader(type);
 
