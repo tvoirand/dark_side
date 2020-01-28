@@ -152,12 +152,11 @@ function Sun(radius, position, name, color, central_body, gl) {
         );
     };
 
-    this.display = function(projection_matrix, sun_position) {
+    this.display = function(projection_matrix) {
         /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
-            -sun_position       [float, float, float]
         */
 
         // update position

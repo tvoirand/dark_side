@@ -190,13 +190,12 @@ function Planet(radius, name, color, central_body, gl) {
         );
     };
 
-    this.display = function(projection_matrix, sun_position, planet_position) {
+    this.display = function(projection_matrix, sun_position) {
         /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
             -sun_position       [float, float, float]
-            -planet_position    [float, float, float]
         */
 
         // update planet position
@@ -307,7 +306,7 @@ function Planet(radius, name, color, central_body, gl) {
         );
         gl.uniform3fv(
             this.program_info.uniform_locations.planet_position,
-            planet_position
+            this.position
         );
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
