@@ -123,12 +123,12 @@ def write_positions(
     output_file = os.path.join(
         dark_side_path,
         "data",
-        "{}.txt".format(datetime.datetime.now().strftime("%Y%m%d_%H%M_%S_{}".format(target_body))),
+        "{}.txt".format(datetime.datetime.now().strftime("{}".format(target_body))),
     )
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
     with open(output_file, "w") as outfile:
-        for i, position in enumerate(positions):
+        for i, position in enumerate(positions[:-1]):
             outfile.write(
                 "{} {:15.8f} {:15.8f} {:15.8f}\n".format(
                     format_date_from_spice(spice.et2utc(times[i], "C", 0)),
@@ -137,6 +137,15 @@ def write_positions(
                     position[2],
                 )
             )
+        # write last line without return statement
+        outfile.write(
+            "{} {:15.8f} {:15.8f} {:15.8f}".format(
+                format_date_from_spice(spice.et2utc(times[len(positions) - 1], "C", 0)),
+                positions[-1][0],
+                positions[-1][1],
+                positions[-1][2],
+            )
+        )
 
 
 if __name__ == "__main__":
