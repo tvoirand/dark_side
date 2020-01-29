@@ -76,34 +76,40 @@ def format_date_from_spice(input_date):
 
     return output_date
 
+def write_output_file(filename, values):
+    """
+    Write values as string in output file.
+    Input:
+        -filename   str
+        -values     [string, ...]
+    """
+    with open(filename, "w") as outfile:
+        for i, value in enumerate(values[:-1]):
+            outfile.write("{}\n".format(value))
+        outfile.write("{}".format(values[-1])) # write last line without newline character
+
 
 def write_positions(
-    target_body,
     utc_start,
     utc_end,
     steps,
-    reference_frame,
-    aberration_correction,
-    observer_body,
 ):
     """
-    Write positions of celestial bodies in output file.
+    Write positions of earth and moon in output file.
     Input:
-        -target_body            str (SPICE compatible celestial body name)
         -utc_start              str (format YYYYmmdd)
         -utc_end                str (format YYYYmmdd)
         -steps                  int
-        -reference_frame        str (SPICE compatible)
-        -aberration_correction  str (SPICE compatible)
-        -observer_body          str (SPICE compatible celestial body name)
     """
 
-    # read kernel files paths from config
+    # read kernel files paths and some constants from config
     dark_side_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     config = configparser.ConfigParser()
     config.read(os.path.join(dark_side_path, "config", "config.ini"))
     spk_kernel = config["spice"]["spk_kernel"]
     lsk_kernel = config["spice"]["lsk_kernel"]
+    reference_frame = config["spice"]["reference_frame"]
+    aberration_correction = config["spice"]["aberration_correction"]
 
     # load kernels
     spice.furnsh(spk_kernel)
@@ -115,57 +121,46 @@ def write_positions(
     times = [x * (et_end - et_start) / steps + et_start for x in range(steps)]
 
     # load positions
-    positions, _ = spice.spkpos(
-        target_body, times, reference_frame, aberration_correction, observer_body
+    earth_positions, _ = spice.spkpos(
+        "EARTH", times, reference_frame, aberration_correction, "SUN"
+    )
+    moon_positions, _ = spice.spkpos(
+        "MOON", times, reference_frame, aberration_correction, "EARTH"
     )
 
-    # write results to output file
-    output_file = os.path.join(
+    # create output dir
+    output_dir = os.path.join(
         dark_side_path,
         "data",
-        "{}.txt".format(datetime.datetime.now().strftime("{}".format(target_body))),
     )
-    if not os.path.exists(os.path.dirname(output_file)):
-        os.makedirs(os.path.dirname(output_file))
-    with open(output_file, "w") as outfile:
-        for i, position in enumerate(positions[:-1]):
-            outfile.write(
-                "{} {:15.8f} {:15.8f} {:15.8f}\n".format(
-                    format_date_from_spice(spice.et2utc(times[i], "C", 0)),
-                    position[0],
-                    position[1],
-                    position[2],
-                )
-            )
-        # write last line without return statement
-        outfile.write(
-            "{} {:15.8f} {:15.8f} {:15.8f}".format(
-                format_date_from_spice(spice.et2utc(times[len(positions) - 1], "C", 0)),
-                positions[-1][0],
-                positions[-1][1],
-                positions[-1][2],
-            )
-        )
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # write results in output files
+    write_output_file(
+        os.path.join(output_dir, "earth.txt"),
+        ["{:15.8f} {:15.8f} {:15.8f}".format(pos[0], pos[1], pos[2]) for pos in earth_positions]
+    )
+    write_output_file(
+        os.path.join(output_dir, "moon.txt"),
+        ["{:15.8f} {:15.8f} {:15.8f}".format(pos[0], pos[1], pos[2]) for pos in moon_positions]
+    )
+    write_output_file(
+        os.path.join(output_dir, "times.txt"),
+        ["{}".format(format_date_from_spice(spice.et2utc(time, "C", 0))) for time in times]
+    )
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-target_body")
     parser.add_argument("-utc_start")
     parser.add_argument("-utc_end")
     parser.add_argument("-steps")
-    parser.add_argument("-reference_frame")
-    parser.add_argument("-aberration_correction")
-    parser.add_argument("-observer_body")
     args = parser.parse_args()
 
     write_positions(
-        args.target_body,
         args.utc_start,
         args.utc_end,
         int(args.steps),
-        args.reference_frame,
-        args.aberration_correction,
-        args.observer_body,
     )
