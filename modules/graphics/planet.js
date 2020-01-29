@@ -7,24 +7,26 @@ import { compute_sphere_data } from "../geometry.js";
 import planet_vs from "./shaders/planet_vs.js";
 import planet_fs from "./shaders/planet_fs.js";
 
-function Planet(radius, name, color, central_body, gl) {
+function Planet(radius, name, color, orbit_display_factor, central_body, gl) {
     /*
     Class describing a Planet.
     Constructor arguments:
-        -radius         float
-        -name           string
-        -color          [float, float, float, float]
-        -central_body   string
+        -radius                 float
+        -name                   string
+        -color                  [float, float, float, float]
+        -orbit_display_factor   float
+        -central_body           string
         -gl             WebGLRenderingContext
     Attributes:
-        -radius             float
-        -name               str
-        -color              [float, ...]
-        -position           [float, float, float]
-        -central_body       str
-        -vs_source          str
-        -fs_source          str
-        -program_info       object
+        -radius                 float
+        -name                   str
+        -color                  [float, ...]
+        -orbit_display_factor   float
+        -position               [float, float, float]
+        -central_body           str
+        -vs_source              str
+        -fs_source              str
+        -program_info           object
             contains:
                 attributes locations
                     vertex position
@@ -35,14 +37,14 @@ function Planet(radius, name, color, central_body, gl) {
                     model view matrix
                     normal matrix
                     sun position
-        -buffers            object
+        -buffers                object
             contains: position, indices, color, normal buffers
-        -vertices           [float, ...]
-        -indices            [int, ...]
-        -vertices_colors    [[float, float, float, float], ...]
-        -model_view_matrix  [float, ...]
+        -vertices               [float, ...]
+        -indices                [int, ...]
+        -vertices_colors        [[float, float, float, float], ...]
+        -model_view_matrix      [float, ...]
             4x4 matrix of gl-matrix module
-        -normal_matrix      [float, ...]
+        -normal_matrix          [float, ...]
             4x4 matrix of gl-matrix module
     Methods:
         -display
@@ -51,6 +53,7 @@ function Planet(radius, name, color, central_body, gl) {
     this.radius = radius;
     this.name = name;
     this.color = color;
+    this.orbit_display_factor = orbit_display_factor;
     this.central_body = central_body;
     this.position = [0.0, 0.0, 0.0];
 
