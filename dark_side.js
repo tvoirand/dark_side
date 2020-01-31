@@ -161,7 +161,7 @@ function read_spice_data() {
         success: function(data) {
             var rows = data.split("\n");
             for (var i = 1; i < rows.length; i++) {
-                var cols = rows[i].split(" ");
+                var cols = rows[i].split(",");
                 earth_positions.push([
                     parseFloat(cols[0]),
                     parseFloat(cols[1]),
@@ -178,7 +178,7 @@ function read_spice_data() {
         success: function(data) {
             var rows = data.split("\n");
             for (var i = 1; i < rows.length; i++) {
-                var cols = rows[i].split(" ");
+                var cols = rows[i].split(",");
                 moon_positions.push([
                     parseFloat(cols[0]),
                     parseFloat(cols[1]),

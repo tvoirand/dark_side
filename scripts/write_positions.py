@@ -139,11 +139,11 @@ def write_positions(
     # write results in output files
     write_output_file(
         os.path.join(output_dir, "earth.txt"),
-        ["{:15.8f} {:15.8f} {:15.8f}".format(pos[0], pos[1], pos[2]) for pos in earth_positions]
+        ["{:15.8f}, {:15.8f}, {:15.8f}".format(pos[0], pos[1], pos[2]) for pos in earth_positions]
     )
     write_output_file(
         os.path.join(output_dir, "moon.txt"),
-        ["{:15.8f} {:15.8f} {:15.8f}".format(pos[0], pos[1], pos[2]) for pos in moon_positions]
+        ["{:15.8f}, {:15.8f}, {:15.8f}".format(pos[0], pos[1], pos[2]) for pos in moon_positions]
     )
     write_output_file(
         os.path.join(output_dir, "times.txt"),
