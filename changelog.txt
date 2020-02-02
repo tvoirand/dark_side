@@ -1,6 +1,12 @@
 Changelog for dark_side.
 
 --------------------------------------------------------------------------------
+Version 0.15.2 of the 20200202.
+    -changed planets lighting from point light to directional light
+    -linked earth and moon position to nasa spice data
+    -added slider control and animation button
+    
+--------------------------------------------------------------------------------
 Version 0.15.1 of the 20200118.
     -improved code structure by adding modules
 
