@@ -64,6 +64,19 @@ function main() {
     );
     var objects_to_draw = [earth, moon, sun];
 
+    // initiate animation status
+    var animation_is_running = false;
+    document.getElementById("animation_button").onclick = function() {
+        // trigger animation
+        if (animation_is_running == true) {
+            animation_is_running = false;
+        } else {
+            animation_is_running = true;
+        }
+    };
+    var time_of_last_anim_frame = 0;
+    var fps_interval = 25;
+
     // loop animation function called at each display refresh
     var render = function(time) {
         /*
@@ -71,6 +84,12 @@ function main() {
             -time   float
                 time since last refresh (in ms) ?
         */
+
+        play_or_stop_animation(
+            animation_is_running,
+            time_of_last_anim_frame,
+            fps_interval
+        );
 
         // get index for spice data arrays based on the time slider value
         var index = get_current_index(spice_data.times.length);
@@ -196,4 +215,57 @@ function read_spice_data() {
     };
 
     return spice_data;
+}
+
+function play_or_stop_animation(
+    animation_is_running,
+    time_of_last_anim_frame,
+    fps_interval
+) {
+    /*
+    Activate animation by automatically increasing time slider value.
+    Input:
+        -animation_is_running       bool
+        -time_of_last_anim_frame    float
+        -fps_interval               int
+    */
+
+    if (animation_is_running) {
+        // case where animation is played
+
+        // handle animation button display
+        document.getElementById("animation_button").innerHTML = "stop";
+
+        var now = Date.now();
+        var elapsed = now - time_of_last_anim_frame;
+
+        if (elapsed > fps_interval) {
+            // time_of_last_anim_frame is the multiple of fps_interval closest and inferior to now
+            time_of_last_anim_frame = now - elapsed % fps_interval;
+
+            // get slider values
+            var slider_value = parseInt(
+                document.getElementById("time_slider").value
+            );
+            var slider_max = parseInt(
+                document.getElementById("time_slider").max
+            );
+            var slider_min = parseInt(
+                document.getElementById("time_slider").min
+            );
+
+            if (slider_value == slider_max) {
+                // if slider is at max, move it to min for a continuous loop
+                document.getElementById("time_slider").value = slider_min;
+            } else {
+                // increase slider value
+                document.getElementById("time_slider").value = slider_value + 1;
+            }
+        }
+    } else {
+        // case where animation is stopped
+
+        // handle animation button display
+        document.getElementById("animation_button").innerHTML = "play";
+    }
 }
