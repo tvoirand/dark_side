@@ -1,4 +1,4 @@
-# Dark side.
+# Dark side
 
 Display Sun, Earth (with longitudes and latitudes), and Moon.
 
