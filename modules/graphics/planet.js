@@ -164,35 +164,6 @@ function Planet(radius, name, color, orbit_display_factor, central_body, gl) {
     mat4.invert(this.normal_matrix, this.model_view_matrix);
     mat4.transpose(this.normal_matrix, this.normal_matrix);
 
-    this.update_position = function(position_vector) {
-        /*
-        Set planet position by updating its model view matrix.
-        Input:
-            -position_vector    [float, float, float]
-        */
-
-        mat4.set(
-            this.model_view_matrix,
-            this.model_view_matrix[0],
-            this.model_view_matrix[1],
-            this.model_view_matrix[2],
-            this.model_view_matrix[3],
-            this.model_view_matrix[4],
-            this.model_view_matrix[5],
-            this.model_view_matrix[6],
-            this.model_view_matrix[7],
-            this.model_view_matrix[8],
-            this.model_view_matrix[9],
-            this.model_view_matrix[10],
-            this.model_view_matrix[11],
-            position_vector[0],
-            position_vector[1],
-            position_vector[2],
-            this.model_view_matrix[15],
-            this.model_view_matrix[16]
-        );
-    };
-
     this.display = function(projection_matrix, sun_position) {
         /*
         Display planet.
