@@ -123,11 +123,12 @@ function Sun(radius, position, name, color, central_body, gl) {
 
     this.model_view_matrix = mat4.create();
 
-    this.display = function(projection_matrix) {
+    this.display = function(projection_matrix, view_matrix) {
         /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
+            -view_matrix        mat4 matrix
         */
 
         // update position
@@ -150,6 +151,12 @@ function Sun(radius, position, name, color, central_body, gl) {
             this.position[2],
             this.model_view_matrix[15],
             this.model_view_matrix[16]
+        );
+
+        mat4.multiply(
+            this.model_view_matrix,
+            view_matrix,
+            this.model_view_matrix
         );
 
         gl.useProgram(this.program_info.program);

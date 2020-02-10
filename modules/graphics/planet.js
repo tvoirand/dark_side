@@ -164,11 +164,12 @@ function Planet(radius, name, color, orbit_display_factor, central_body, gl) {
     mat4.invert(this.normal_matrix, this.model_view_matrix);
     mat4.transpose(this.normal_matrix, this.normal_matrix);
 
-    this.display = function(projection_matrix, sun_position) {
+    this.display = function(projection_matrix, view_matrix, sun_position) {
         /*
         Display planet.
         Input:
             -projection_matrix  mat4 matrix
+            -view_matrix        mat4 matrix
             -sun_position       [float, float, float]
         */
 
@@ -192,6 +193,12 @@ function Planet(radius, name, color, orbit_display_factor, central_body, gl) {
             this.position[2],
             this.model_view_matrix[15],
             this.model_view_matrix[16]
+        );
+
+        mat4.multiply(
+            this.model_view_matrix,
+            view_matrix,
+            this.model_view_matrix
         );
 
         gl.useProgram(this.program_info.program);

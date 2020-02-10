@@ -56,7 +56,7 @@ function main() {
     );
     var sun = new Sun(
         1.0, // radius
-        [0, 0, -20], // position
+        [0, 0, 0], // position
         "SUN", // name
         [1.0, 1.0, 0.0, 1.0], // color
         "SUN", // central body
@@ -78,6 +78,11 @@ function main() {
     };
     var time_of_last_anim_frame = 0;
     var fps_interval = 25;
+
+    // initiate camera matrix
+    var camera_matrix = mat4.create();
+    var view_matrix = mat4.create();
+    mat4.fromTranslation(camera_matrix, [0, 0, 20]);
 
     // loop animation function called at each display refresh
     var render = function(time) {
@@ -111,16 +116,15 @@ function main() {
             )
         );
 
-        // shift earth and moon Z value
-        earth.position[2] -= 20;
-        moon.position[2] -= 20;
+        // compute view matrix from camera matrix
+        mat4.invert(view_matrix, camera_matrix);
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // display objects
-        earth.display(projection_matrix, sun.position);
-        moon.display(projection_matrix, sun.position);
-        sun.display(projection_matrix);
+        earth.display(projection_matrix, view_matrix, sun.position);
+        moon.display(projection_matrix, view_matrix, sun.position);
+        sun.display(projection_matrix, view_matrix);
 
         requestAnimationFrame(render);
     };
