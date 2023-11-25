@@ -1,21 +1,8 @@
 # Dark side
 
-Display Sun, Earth (with longitudes and latitudes), and Moon.
+The idea behind this project is to help understand the trajectory of the Moon in our sky.
+For this, a dynamic model of the Sun-Earth-Moon system would be rendered in 3D, and displayed from several points of view: as viewed by an observer on the Earth's surface, or from above the ecliptic plan.
 
-Version 0.15.2 of the 20200202.
+This project has been in pause for some years.
 
-Added in this version:
-
-*   changed planets lighting from point light to directional light
-*   linked earth and moon position to nasa spice data
-*   added slider control and animation button
-
-Todo:
-
-*   implement camera movement
-*   apply texture to earth and moon
-*   implement earth and moon orientation
-*   improve sun display
-*   get rid of gl-matrix.js dependency
-
- <img src="docs/example.png" width="50%" />
+<img src="docs/example.png" width="50%" />
